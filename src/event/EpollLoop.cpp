@@ -1,21 +1,48 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
+#include <iostream>
 #include <algorithm>
 #include <cstdint>
 #include <vector>
 
-#include "EPollFdEvent.h"
+#include "CLog.h"
+#include "MacroDef.h"
+
+#include "EpollFdEvent.h"
 #include "EpollLoop.h"
+#include "EpollPoller.h"
 
-#include <iostream>
-// #include "MacroDef.h"
+EpollLoop::EpollLoop() 
+              :keepRunning_(true)
+              ,eventHandling_(false)
+              ,callingPendingFunctors_(false)
+              // , iteration_(0)
+              ,poller_(std::make_unique<EpollPoller>(this))
+              ,currentActiveEvent_(nullptr)
+{
 
-EpollLoop::EpollLoop() : epollFd_(epoll_create1(EPOLL_CLOEXEC)) {}
+}
 
-EpollLoop::~EpollLoop() {
-  //
-  // CHECK_CLOSE_RESET_FD(epollFd_);
+EpollLoop::~EpollLoop()
+{
+  int fd = poller_->epollFd();
+  if(fd<0)
+  {
+     ::close(fd);
+  }
+}
+ int EpollLoop::epollFd() const 
+{
+    if(poller_!=nullptr)
+    {
+      return poller_->epollFd();
+    }
+    else
+    {
+      CLOG_ERROR()<< "Epoll Get Fd error";
+      return -1;
+    }
 }
 
 bool EpollLoop::isInLoopThread() { return false; }
@@ -23,49 +50,52 @@ bool EpollLoop::isInLoopThread() { return false; }
 bool EpollLoop::isRunning() const { return false; }
 
 void EpollLoop::runLoop(Mode mode) {
-  if (epollFd_ < 0) return;
 
-  std::vector<struct epoll_event> events;
-  events.resize(maxLoopEntries_);
-
+  if (epollFd() < 0) return;
   keepRunning_ = (mode == Loop::Mode::kForever);
   do {
-    int fds = epoll_wait(epollFd_, events.data(), events.size(), 20);
-
-    // beginLoopProcess();
-
-    // handleExpiredTimers();
-
-    for (int i = 0; i < fds; ++i) {
-      epoll_event &ev = events.at(i);
-
-      EpollFdEvent::OnEventCallback(ev.data.fd, ev.events, ev.data.ptr);
+    activeEvents_.clear();
+    //handleNextFunc();  //处理LOOP池子事件
+    poller_->poll(10000,&activeEvents_);
+    eventHandling_ = true;
+    for (EpollFdEvent* fdEvent : activeEvents_)
+    {
+      currentActiveEvent_ =  fdEvent;
+      currentActiveEvent_->handleEvent(50);
     }
-    /// If the receiver array size is full, increase its size with 1.5 times.
-    if (fds >= maxLoopEntries_) {
-      maxLoopEntries_ = (maxLoopEntries_ + maxLoopEntries_ / 2);
-      events.resize(maxLoopEntries_);
-    }
-
-  } while (keepRunning_);
+    eventHandling_ = false;
+    } while (keepRunning_);
 }
 
-void EpollLoop::addFdSharedData(int fd, EpollFdSharedData *fd_event) {
-  fdDataMap_.insert(std::make_pair(fd, fd_event));
+void EpollLoop::updateEvent(EpollFdEvent* event)
+{
+  assert(event->getLoop() == this);
+  poller_->updateEvent(event);
 }
 
-void EpollLoop::removeFdSharedData(int fd) { fdDataMap_.erase(fd); }
+void EpollLoop::removeEvent(EpollFdEvent* event)
+{
+  assert(event->getLoop() == this);
+  if (eventHandling_)
+  {
+    assert(currentActiveEvent_ == event ||
+      std::find(activeEvents_.begin(),  \
+       activeEvents_.end(), event)  \
+       == activeEvents_.end()); \
+  }
+  poller_->removeEvent(event);
+}
 
-EpollFdSharedData *EpollLoop::queryFdSharedData(int fd) const {
-  auto it = fdDataMap_.find(fd);
-  if (it != fdDataMap_.end()) return it->second;
-  return nullptr;
+bool EpollLoop::hasEvent(EpollFdEvent* event)
+{
+  assert(event->getLoop() == this);
+  return poller_->hasEvent(event);
 }
 
 void EpollLoop::exitLoop(const std::chrono::milliseconds &wait_time) {
   keepRunning_ = false;
 }
 
-FdEvent *EpollLoop::creatFdEvent(const std::string &fdName) {
+EpollFdEvent *EpollLoop::creatFdEvent(const std::string &fdName) {
   return new EpollFdEvent(this, fdName);
 }

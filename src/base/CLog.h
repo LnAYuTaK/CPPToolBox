@@ -1,7 +1,7 @@
 /**
  * @file CLOG.h
  * @author LnAYuTaK (807874484@qq.com)
- * @brief 日志模块
+ * @brief 日志模块(默认写入文件 并输入到控制台)
  * @version 0.1
  * @date 2023-03-03
  *
@@ -20,7 +20,7 @@
 class CLOG {
   DECLARE_SINGLETON(CLOG)
  public:
-  enum class CLOG_LEVEL {
+  enum CLOG_LEVEL {
     CLOG_LEVEL_DEBUG,
     CLOG_LEVEL_INFO,
     CLOG_LEVEL_WARN,
@@ -30,10 +30,7 @@ class CLOG {
   static constexpr const char* LogLevelName[4] = {" DEBUG", " INFO ", " WARN ",
                                                   " ERROR"};
   // Not Used
-  static constexpr const char* LogLevelNameColor[4] = {
-      " \033[0m\033[1;36mDEBUG\033[0m ", " \033[0m\033[1;32mINFO\033[0m  ",
-      " \033[0m\033[1;33mWARN\033[0m  ", " \033[0m\033[1;31mERROR\033[0m "};
-
+  static constexpr const int LogLevelColor[4] = {34, 32, 33, 31};
   ~CLOG();
 
   static unsigned long long GetCurrentThreadId();
@@ -56,6 +53,7 @@ class CLOG {
     // DEBUG INFO
     LogMsg(CLOG_LEVEL nLevel, const char* pcFunc, const int& line) {
       std::lock_guard<std::mutex> lock(_mtx);
+      nLevel_ = (int)nLevel;
       _stream.zeroBuffer();
       _stream << "[" << CLOG::GetCurrentDateTime() << "]"
               << "[" << LogLevelName[(int)nLevel] << "]"
@@ -66,9 +64,10 @@ class CLOG {
     LogMsg(CLOG_LEVEL nLevel, const char* pcFunc, const char* file,
            const int& line) {
       std::lock_guard<std::mutex> lock(_mtx);
+      nLevel_ = (int)nLevel;
       _stream.zeroBuffer();
       _stream << "[" << CLOG::GetCurrentDateTime() << "]"
-              << "[" << LogLevelName[(int)nLevel] << "]"
+              << "[" << LogLevelName[nLevel] << "]"
               << "[" << pcFunc << "]"
               << "[" << file << "]"
               << "[" << line << "]";
@@ -85,13 +84,15 @@ class CLOG {
           f.close();
         }
       }
-      fprintf(stdout, "%s\n", _stream.buffer().data());
+      fprintf(stdout, "\033[%dm%s\e[0m\n", LogLevelColor[nLevel_],
+              _stream.buffer().data());
       fflush(stdout);
     }
     LogStream& stream() { return _stream; }
 
    private:
     std::mutex _mtx;
+    int nLevel_;
     LogStream _stream;
   };
 

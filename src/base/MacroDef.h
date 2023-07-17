@@ -1,21 +1,22 @@
 /**
  * @file MacroDef.h
  * @author LnAYuTaK (807874484@qq.com)
- * @brief  宏定义
+ * @brief  通用宏定义
  * @version 0.1
  * @date 2023-07-11
  */
 
 #pragma once
-#include <thread>
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
 #include <memory>
 #include <mutex>
 #include <new>
+#include <thread>
 #include <type_traits>
 #include <utility>
+#include <unistd.h>
 
 #define DEFINE_TYPE_TRAIT(name, func)                      \
   template <typename T>                                    \
@@ -141,14 +142,14 @@ typename std::enable_if<!HasShutdown<T>::value>::type CallShutdown(
 #define CHECK_CLOSE_RESET_FD(fd) \
   do {                           \
     if (fd != -1) {              \
-      close(fd);                 \
+      ::close(fd);               \
       fd = -1;                   \
     }                            \
   } while (0)
 #define CHECK_CLOSE_FD(fd) \
   do {                     \
     if (fd != -1) {        \
-      close(fd);           \
+      ::close(fd);         \
     }                      \
   } while (0)
 

@@ -9,13 +9,12 @@
 #pragma once
 
 #include <string.h>
+#include <fstream>
 #include <memory>
 #include <vector>
+#include "CLog.h"
 #include "MacroDef.h"
 #include "sqlite3.h"
-#include <string.h>
-#include <fstream>
-#include "CLog.h"
 
 using queryVector = std::vector<std::vector<std::string>>;
 class Database {

@@ -1,44 +1,43 @@
 #pragma once
 
 #include <unordered_map>
+#include <vector>
+#include <memory>
 
-#include "Handle.h"
-#include "FdEvent.h"
 #include "Loop.h"
-#ifndef DEFAULT_MAX_LOOP_ENTRIES
-#define DEFAULT_MAX_LOOP_ENTRIES (256)
-#endif
+#include "FdEvent.h"
 
-struct EpollFdSharedData;
+class  EpollPoller;
+class EpollFdEvent;
 class EpollLoop : public Loop {
+  
+  using FdEventList   = std::vector<EpollFdEvent*> ;
+  using PollerPtr     = std::unique_ptr<EpollPoller>;
  public:
   explicit EpollLoop();
   virtual ~EpollLoop() override;
-
- public:
-  //! 是否与Loop在同一个线程内
+  // 是否与Loop在同一个线程内
   virtual bool isInLoopThread() override;
-  //! Loop是否正在运行
+  // Loop是否正在运行
   virtual bool isRunning() const override;
-
+  //开始运行EPoll循环
   virtual void runLoop(Mode mode) override;
-  // Create Fd Event
-  virtual FdEvent *creatFdEvent(const std::string &fdName) override;
+  //创建普通的FD读写事件
+  virtual EpollFdEvent *creatFdEvent(const std::string &fdName) override;
 
   virtual void exitLoop(const std::chrono::milliseconds &wait_time) override;
 
- public:
-  inline int epollFd() const { return epollFd_; }
+  inline int epollFd() const ;
 
-  void addFdSharedData(int fd, EpollFdSharedData *fd_data);
-  void removeFdSharedData(int fd);
-  EpollFdSharedData *queryFdSharedData(int fd) const;
-
- protected:
+  void updateEvent(EpollFdEvent* event);
+  void removeEvent(EpollFdEvent* event);
+  bool hasEvent(EpollFdEvent* event);
  private:
-  int maxLoopEntries_ = DEFAULT_MAX_LOOP_ENTRIES;
-  int epollFd_ = -1;
-  bool keepRunning_ = true;
-
-  std::unordered_map<int, EpollFdSharedData *> fdDataMap_;
+  bool keepRunning_ ;
+  FdEventList activeEvents_;
+  EpollFdEvent* currentActiveEvent_;
+  bool eventHandling_; /* atomic */
+  bool callingPendingFunctors_; /* atomic */
+  // int64_t iteration_;
+  PollerPtr  poller_;
 };

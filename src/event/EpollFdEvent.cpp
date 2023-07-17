@@ -1,153 +1,100 @@
 #include <algorithm>
 #include <cstring>
+#include <iostream>
 #include <vector>
 
-#include "EPollFdEvent.h"
+#include "CLog.h"
+#include "EpollFdEvent.h"
 #include "EpollLoop.h"
 #include "FdEvent.h"
 #include "Loop.h"
+#include <sys/epoll.h>
 
-//! 同一个fd共享的数据
-struct EpollFdSharedData {
-  int ref = 0;  //! 引用计数
-  struct epoll_event ev;
-  std::vector<EpollFdEvent *> read_events;
-  std::vector<EpollFdEvent *> write_events;
-};
+const int EpollFdEvent::kNoneEvent = 0;
+const int EpollFdEvent::kReadEvent = EPOLLIN | EPOLLPRI;
+const int EpollFdEvent::kWriteEvent = EPOLLOUT;
 
 EpollFdEvent::EpollFdEvent(EpollLoop *wpLoop, const std::string &name)
-    : FdEvent(name), wpLoop_(wpLoop) {}
+    : FdEvent(name)
+    ,loop_(wpLoop)
+    ,fd_(nullptr)
+    ,addedToLoop_(false)
+    ,isStopAfterTrigger_(false)
+    ,revents_  (0)
+    ,index_(-1)
+    ,events_(0)
+    ,isEnabled_(false)
+    ,eventHandling_(false)
+     {
+     }
 
 EpollFdEvent::~EpollFdEvent() {
-  disable();
-  unrefFdSharedData();
+  if(fd_!=nullptr)
+  {
+    fd_->close();
+    delete fd_;
+  }
+}
+
+void EpollFdEvent::update()
+{
+  addedToLoop_ = true;
+  loop_->updateEvent(this);
+}
+
+void EpollFdEvent::remove()
+{
+  assert(isNoneEvent());
+  addedToLoop_ = false;
+  loop_->removeEvent(this);
 }
 
 bool EpollFdEvent::initialize(int fd, short events, Mode mode) {
-  if (isEnabled()) {
+
+  if (fd_ == nullptr) {
+    fd_ = new Fd(fd);
+  } else {
+    CLOG_ERROR() << name() <<": Epoll Init Error";
     return false;
   }
-
-  unrefFdSharedData();
-
-  fd_ = fd;
-  events_ = events;
   if (mode == FdEvent::Mode::kOneshot) {
-    is_stop_after_trigger_ = true;
+    isStopAfterTrigger_ = true;
   }
-  d_ = wpLoop_->queryFdSharedData(fd_);
-  if (d_ == nullptr) {
-    d_ = new EpollFdSharedData;
+  return true;
+}
 
-    memset(&d_->ev, 0, sizeof(d_->ev));
-    d_->ev.data.ptr = static_cast<void *>(d_);
+void EpollFdEvent::handleEvent(int time)
+{
+//Lock //
+  handleLockEvent(time);
+}
 
-    wpLoop_->addFdSharedData(fd_, d_);
-  }
-  ++d_->ref;
-  
-  if(events == FdEvent::kReadEvent)
+void EpollFdEvent::handleLockEvent(int receiveTime)
+{
+  //记录事件
+  eventHandling_ = true;
+  if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN))
   {
-    this->enable();
+    if (closeCallback_) closeCallback_();
   }
-  return true;
+  if (revents_ & EPOLLERR)
+  {
+   CLOG_WARN()<< name() << ": EpollError";
+  }
+  if (revents_ & (EPOLLERR | EPOLLERR))
+  {
+    if (errorCallback_) errorCallback_();
+  }
+  if (revents_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
+  {
+    if (readCallback_) readCallback_(receiveTime);
+  }
+  if (revents_ & EPOLLOUT)
+  {
+    if (writeCallback_) writeCallback_();
+  }
+  eventHandling_ = false;
+  //记录时间//
 }
 
-bool EpollFdEvent::enable() {
-  if (d_ == nullptr) return false;
 
-  if (is_enabled_) return true;
-
-  if (events_ & kReadEvent) d_->read_events.push_back(this);
-
-  if (events_ & kWriteEvent) d_->write_events.push_back(this);
-
-  reloadEpoll();
-
-  is_enabled_ = true;
-  return true;
-}
-
-bool EpollFdEvent::disable() {
-  if (d_ == nullptr || !is_enabled_) return true;
-
-  if (events_ & kReadEvent) {
-    auto iter = std::find(d_->read_events.begin(), d_->read_events.end(), this);
-    d_->read_events.erase(iter);
-  }
-
-  if (events_ & kWriteEvent) {
-    auto iter =
-        std::find(d_->write_events.begin(), d_->write_events.end(), this);
-    d_->write_events.erase(iter);
-  }
-
-  reloadEpoll();
-
-  is_enabled_ = false;
-  return true;
-}
-
-Loop *EpollFdEvent::getLoop() const { return wpLoop_; }
-
-//! 重新加载fd对应的epoll
-void EpollFdEvent::reloadEpoll() {
-  uint32_t old_events = d_->ev.events;
-  uint32_t new_events = 0;
-
-  if (!d_->write_events.empty()) new_events |= EPOLLOUT;
-  if (!d_->read_events.empty()) new_events |= EPOLLIN;
-
-  d_->ev.events = new_events;
-
-  if (old_events == 0) {
-    if (new_events != 0)
-      epoll_ctl(wpLoop_->epollFd(), EPOLL_CTL_ADD, fd_, &d_->ev);
-  } else {
-    if (new_events != 0)
-      epoll_ctl(wpLoop_->epollFd(), EPOLL_CTL_MOD, fd_, &d_->ev);
-    else
-      epoll_ctl(wpLoop_->epollFd(), EPOLL_CTL_DEL, fd_, nullptr);
-  }
-}
-
-void EpollFdEvent::OnEventCallback(int fd, uint32_t events, void *obj) {
-  EpollFdSharedData *d = static_cast<EpollFdSharedData *>(obj);
-  if (events & EPOLLIN) {
-    for (EpollFdEvent *event : d->read_events) {
-      event->onEvent(kReadEvent);
-
-    }
-  }
-  if (events & EPOLLOUT) {
-    for (EpollFdEvent *event : d->write_events) {
-      event->onEvent(kWriteEvent);
-    }
-  }
-  (void)fd;
-}
-
-void EpollFdEvent::onEvent(short events) {
-  if (is_stop_after_trigger_) {
-    disable();
-  }
-  // wp_loop_->beginEventProcess();
-  if (cb_) {
-    ++cb_level_;
-    cb_(events);
-    --cb_level_;
-  }
-  // wp_loop_->endEventProcess(this);
-}
-
-void EpollFdEvent::unrefFdSharedData() {
-  if (d_ != nullptr) {
-    --d_->ref;
-    if (d_->ref == 0) {
-      wpLoop_->removeFdSharedData(fd_);
-      delete d_;
-      d_ = nullptr;
-      fd_ = -1;
-    }
-  }
-}

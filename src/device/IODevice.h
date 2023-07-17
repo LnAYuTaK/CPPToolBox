@@ -8,20 +8,22 @@
 
 #pragma once
 
-class IODevice{
+class IODevice {
  public:
-
-  enum DriverType { SerialType, 
-                    ADCDeviceType, 
-                    SpiType, 
-                    GPIOType 
-  };
-  IODevice(/* args */){;}
+  enum DriverType { SerialType, ADCDeviceType, SpiType, GPIOType};
+  IODevice(/* args */) { ; }
   virtual DriverType type() const = 0;
-  virtual bool open() = 0 ;
-  virtual void close() =0 ;
-  virtual ~IODevice() {;}
+  
+  //Fill Json Para
+  virtual bool init()
+  {
+    return true;
+  }
+  //
+  virtual bool start() = 0;
+  virtual void stop() = 0;
+  virtual void close()  = 0;
+  virtual void cleanup() = 0;
 
+  virtual ~IODevice() { ; }
 };
-
-

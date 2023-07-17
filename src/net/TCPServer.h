@@ -1,7 +1,7 @@
 #pragma once
 
-#include "HPSocket.h"
-#include "SocketInterface.h"
+#include "HP-Socket/HPSocket.h"
+#include "HP-Socket/SocketInterface.h"
 
 class TCPServerListener : public CTcpPullServerListener {
  public:

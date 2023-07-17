@@ -1,12 +1,8 @@
 #include "TCPServer.h"
+#include "App.h"
 
 #include "Bytes.h"
 #include "CLog.h"
-
-#include "App.h"
-#include "NetWorkManager.h"
-#include "BlockerManager.h"
-
 EnHandleResult TCPServerListener::OnPrepareListen(ITcpServer* pSender,
                                                   SOCKET soListen) {
   return HR_OK;
@@ -14,10 +10,6 @@ EnHandleResult TCPServerListener::OnPrepareListen(ITcpServer* pSender,
 /***********************************************************************************************/
 EnHandleResult TCPServerListener::OnAccept(ITcpServer* pSender, CONNID dwConnID,
                                            UINT_PTR soClient) {
-  // TCHAR szAddress[100];
-  // int iAddressLen = sizeof(szAddress) / sizeof(TCHAR);
-  // USHORT usPort;
-  // pSender->GetRemoteAddress(dwConnID, szAddress, iAddressLen, usPort);
   return HR_OK;
 }
 /***********************************************************************************************/
@@ -29,8 +21,10 @@ EnHandleResult TCPServerListener::OnHandShake(ITcpServer* pSender,
 EnHandleResult TCPServerListener::OnReceive(ITcpServer* pSender,
                                             CONNID dwConnID, int iLength) {
   Bytes buffer(iLength);
-  app()->NetWorkMgr()->Server()->Fetch(dwConnID, buffer.ptr(), iLength);
-  app()->BlcokerMgr()->Publish<Bytes>("TCPSever", buffer);
+  buffer.clear();
+  ITcpPullServer* pServer = ITcpPullServer::FromS(pSender);
+  EnFetchResult result = pServer->Fetch(dwConnID, buffer.ptr(), iLength);
+  std::cout << buffer.ptr() << std::endl;
   return HR_OK;
 }
 /***********************************************************************************************/

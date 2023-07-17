@@ -18,21 +18,20 @@
 #include "Bytes.h"
 #include "CLog.h"
 #include "FileHelper.h"
+#include "IOControl.h"
 #include "MacroDef.h"
 #include "ThreadPool.h"
-#include "IOControl.h"
-//app
-#include "Loop.h"
-#include "EPollFdEvent.h"
+// app
+#include "EpollFdEvent.h"
 #include "FdEvent.h"
+#include "Loop.h"
+#include "Database.h"
+#include "SerialDriver.h"
+#include "TCPClient.h"
+#include "TCPServer.h"
+#include "ADCDevice.h"
 
-// Test def
-// #define IO_TEST
-class NetWorkManager;
-class ParaManager;
-class BlockerManager;
-class DriverManager;
-class NetWorkManager;
+SERIAL_DRIVER_CLASS(serial1);
 
 #define FD_EVENT_TEST
 #define DB_FILE "test.db"
@@ -42,42 +41,34 @@ class NetWorkManager;
 class Application {
   //单例
   DECLARE_SINGLETON(Application)
-
-  using ParaMgrShardPtr    = std::shared_ptr<ParaManager>;
-  using BlockerMgrShardPtr = std::shared_ptr<BlockerManager>;
-  using DriverMgrShardPtr  = std::shared_ptr<DriverManager>;
-  using NetWorkMgrShardPtr = std::shared_ptr<NetWorkManager>;
  public:
   ~Application();
   //资源初始化
   void init();
   //开启系统任务
   void start();
-  //Event Loop;
-  void exec(){
-    if(loop_)
-    {
+  // Event Loop;
+  void exec() {
+    if (loop_) {
       loop_->runLoop();
     }
   }
-  //Main Loop
-  Loop * loop(){ return this->loop_; }
-  //ParaManger;
-  ParaMgrShardPtr& ParaMgr() { return this->_paraMgr; }
-  //事件发布订阅管理器
-  BlockerMgrShardPtr& BlcokerMgr() { return this->_blockerMgr; }
-  //外设设备管理器
-  DriverMgrShardPtr& DriverMgr() { return this->_driverMgr; }
-  //网络通信管理器
-  NetWorkMgrShardPtr& NetWorkMgr() { return this->_netWorkMgr; }
+  // Main Loop
+  Loop* loop() { return this->loop_; }
+
  private:
   //内部资源
-  ParaMgrShardPtr    _paraMgr;
-  BlockerMgrShardPtr _blockerMgr;
-  NetWorkMgrShardPtr _netWorkMgr;
-  DriverMgrShardPtr  _driverMgr;
-  Loop *             loop_ = nullptr;
 
+  // TCPClientListener   cListener_;
+  //  CTcpPullClientPtr tcpClient_;
+  // TCPServerListener   sListener_;
+  //  CTcpPullServerPtr  tcpServer_;
+
+  serial1 serial;
+  Loop* loop_ = nullptr;
+
+  ADCDevice ads1115;
+  
 };
 
 //全局单例接口

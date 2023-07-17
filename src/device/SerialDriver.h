@@ -11,9 +11,9 @@
 #pragma once
 
 #include <functional>
+#include "CSerialPort/SerialPort.h"
+#include "CSerialPort/SerialPortInfo.h"
 #include "IODevice.h"
-#include "SerialPort.h"
-#include "SerialPortInfo.h"
 
 using namespace itas109;
 class SerialListener;
@@ -22,7 +22,7 @@ class SerialDirver : public IODevice {
   SerialDirver();
   ~SerialDirver() override;
 
-  virtual void init(const char *portName, int baudRate = BaudRate9600,
+  void init(const char *portName, int baudRate = BaudRate9600,
                     Parity parity = ParityNone, DataBits dataBits = DataBits8,
                     StopBits stopbits = StopOne,
                     FlowControl flowControl = FlowNone,
@@ -39,9 +39,15 @@ class SerialDirver : public IODevice {
     return _port->writeData(data, size);
   }
   //打开串口
-  virtual bool open() override{ return _port->open(); }
+  bool open()  { return _port->open(); }
   //关闭串口
-  virtual void close()override{ _port->close(); }
+  void close() override { _port->close(); }
+   
+  bool start()override{return true;}
+
+  void stop() override{}
+
+  void cleanup()override{}
 
  private:
   CSerialPort *_port;

@@ -1,6 +1,5 @@
 #include "Database.h"
 
-
 Database::Database(const char* apFilename,
                    const int aFlags /* = SQLite::OPEN_READONLY*/,
                    const int aBusyTimeoutMs /* = 0 */,

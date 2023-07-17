@@ -1,11 +1,8 @@
 #include "TCPClient.h"
 
+#include "App.h"
 #include "Bytes.h"
 #include "CLog.h"
-
-#include "App.h"
-#include "NetWorkManager.h"
-#include "BlockerManager.h"
 
 EnHandleResult TCPClientListener::OnPrepareConnect(ITcpClient* pSender,
                                                    CONNID dwConnID,
@@ -26,8 +23,10 @@ EnHandleResult TCPClientListener::OnHandShake(ITcpClient* pSender,
 EnHandleResult TCPClientListener::OnReceive(ITcpClient* pSender,
                                             CONNID dwConnID, int iLength) {
   Bytes buffer(iLength);
-  app()->NetWorkMgr()->Client()->Fetch(buffer.ptr(), iLength);
-  app()->BlcokerMgr()->Publish<Bytes>("TCPClient", buffer);
+  buffer.clear();
+  ITcpPullClient* pClient = ITcpPullClient::FromS(pSender);
+  EnFetchResult result = pClient->Fetch(buffer.ptr(), iLength);
+  std::cout << buffer.ptr() << std::endl;
   return HR_OK;
 }
 /***********************************************************************************************/

@@ -1,9 +1,0 @@
-syntax = "proto3";
-message SysConfig{
-
-    string   ComponentID = 1;   
-    
-    int32 DeviceStatusInterval = 2;  
-
-	int32 DataInterval = 3;       
-}

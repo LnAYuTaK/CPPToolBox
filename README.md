@@ -17,17 +17,18 @@
     |   |-- common   
     |   |-- driver
     |   |-- db
+    |   |-- event
     |   |-- net
     |   |-- config
 ```
 
 ## 项目介绍
 ### 系统架构
-
+项目做到了整体解耦 除了必要的base模块和event模块其他可以通过CMake选项增删
 <img src="res/sys_architeture.png" alt="System Architecture New" height="450">
 
-上图是整个系统架构的一个简单概括性图示.
 
+ 上图是整个系统架构的一个简单概括性图示.
 ### 项目构建
 
 使用**CMake**构建本项目.
@@ -35,18 +36,16 @@
 
 ```console
 $ cd GWZD 
-$ cd thirdparty/lib  tar -xzvf develop.tar.gz && cd .. 
 $ mkdir build && cd build
 $ cmake .. 
 $ make
 将在 bin 目录生成默认应用程序 
-最后将 thirdparty/lib/copylib.tar.gz 解压放到 开发板的 /usr/lib  下
 ```
 ### 用例展示
 
 #### 日志模块
 创建日志流匿名类的方式实例化日志流对象，在其析构时输出到控制台 并将日志内容输入到文件,日志模块格式如下
-```shell
+```C++
 CLOG_INFO() << "INFO LOG"
 
 [1970.01.01-09:49:56][ INFO ][function][line] INFO LOG
@@ -68,6 +67,29 @@ CLOG_INFO_FMT("%s","This is INFO Log")
 ```CPP
 Example:
 CLOG_INFO() << "This is INFO Log" 
+```
+#### Eventloop(事件循环池)
+底层使用IO多路复用epoll 传统**Reactor模型多线程响应式架构**
+内部通过事件回调 执行相关任务配合ThreadPool可以进行大量计算和阻塞操作
+```CPP
+
+EpollLoop loop = Loop::New()
+//向标准输入流 注册一个FD读事件
+auto fds = loop->creatFdEvent("STDIO");
+//初始化
+fds->initialize(STDIN_FILENO,1,Event::Mode::kPersist);
+//注册回调
+fds->setReadCallback([&](int fd){
+    char buffer[256];
+    bzero(buffer, sizeof(buffer));
+    read(STDIN_FILENO, buffer, sizeof(buffer));
+    std::cout << buffer << std::endl;
+});
+//使能读取
+fds->enableReading();
+//开启事件循环等待相应
+loop.runloop();
+
 ```
 #### 网络模块
 实现基础的网络模块 TCP客户端 TCP服务器 MQTT 客户端

@@ -4,10 +4,10 @@
  * @brief  GPIO控制
  * @version 0.1
  * @date 2023-07-11
- * 
- * 
+ *
+ *
  */
-#pragma once 
+#pragma once
 
 #include <fcntl.h>
 #include <linux/ioctl.h>
@@ -22,7 +22,6 @@
 
 class IOControl {
  public:
- 
   enum GPIO_FUNC {
     Relay1,
     Relay2,
@@ -43,7 +42,7 @@ class IOControl {
     Rs4851Ctrl,
     Rs4852Ctrl
   };
-   
+
   enum PinState { GPIO_RESET, GPIO_SET };
 
   static void setValue(GPIO_FUNC gpio_no, PinState state) {

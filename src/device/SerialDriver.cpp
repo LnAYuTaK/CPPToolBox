@@ -30,7 +30,7 @@ SerialListener::SerialListener(CSerialPort* port, SerialDirver* driver)
     : _port(port),
       _driver(driver){
 
-};
+      };
 /***********************************************************/
 void SerialListener::onReadEvent(const char* portName,
                                  unsigned int readBufferLen) {

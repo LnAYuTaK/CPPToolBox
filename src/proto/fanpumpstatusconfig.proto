@@ -1,8 +1,0 @@
-syntax = "proto3";
-
-message FanPumpStatusConfig{
-
-    string  Status = 1;  
-	string  WorkMode = 2; 
-
-}

@@ -57,6 +57,7 @@ class LogStream {
   Self& operator<<(short);
   Self& operator<<(unsigned short);
   Self& operator<<(int);
+  // Self& operator<<(const int v);
   Self& operator<<(unsigned int);
   Self& operator<<(long);
   Self& operator<<(unsigned long);

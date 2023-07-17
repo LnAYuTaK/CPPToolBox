@@ -6,7 +6,7 @@
 #include <vector>
 
 class FdEvent;
-
+class EpollFdEvent;
 class Loop {
  public:
   static Loop *New();
@@ -28,20 +28,8 @@ class Loop {
 
   //! 委托延后执行动作
   using Func = std::function<void()>;
-  // virtual void runInLoop(Func &&func, const std::string &what = "") = 0;
-  // virtual void runInLoop(const Func &func, const std::string &what = "") = 0;
-  // virtual void runNext(Func &&func, const std::string &what = "") = 0;
-  // virtual void runNext(const Func &func, const std::string &what = "") = 0;
-  // virtual void run(Func &&func, const std::string &what = "") = 0;
-  // virtual void run(const Func &func, const std::string &what = "") = 0;
 
-  virtual FdEvent *creatFdEvent(const std::string &fd_name = "") = 0;
-  // virtual TimerEvent *CreatTimerEvent(const std::string &what = "") = 0;
-  // virtual SignalEvent *CreatEvent(const std::string &what = "") = 0;
-
-  //! 统计
-  // virtual Stat getStat() const = 0;
-  // virtual void resetStat() = 0;
+  virtual  EpollFdEvent *creatFdEvent(const std::string &fd_name = "") = 0;
 
   //! 阈值
   struct WaterLine {
