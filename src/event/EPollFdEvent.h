@@ -4,8 +4,6 @@
 #include "Fd.h"
 #include "FdEvent.h"
 class EpollLoop;
-struct EpollFdSharedData;
-
 class EpollFdEvent : public FdEvent {
  public:
   explicit EpollFdEvent(EpollLoop *wp_loop, const std::string &name);

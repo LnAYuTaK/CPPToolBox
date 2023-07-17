@@ -8,22 +8,28 @@
 
 #pragma once
 
+#include <iostream>
+#include <string>
+class UartDevice;
+class ADCDevice;
+class EpollLoop;
+
 class IODevice {
  public:
   enum DriverType { SerialType, ADCDeviceType, SpiType, GPIOType};
-  IODevice(/* args */) { ; }
+  IODevice() {}
+  virtual~IODevice(){}
   virtual DriverType type() const = 0;
-  
-  //Fill Json Para
-  virtual bool init()
-  {
-    return true;
-  }
-  //
+  //初始化
+  virtual bool init(){return true;}
+  //开启
   virtual bool start() = 0;
+  //停止
   virtual void stop() = 0;
+   //关闭
   virtual void close()  = 0;
+   //清理
   virtual void cleanup() = 0;
 
-  virtual ~IODevice() { ; }
+  UartDevice *  creatUartDevice(EpollLoop * loop , std::string & name);
 };

@@ -1,14 +1,15 @@
+#include <sys/epoll.h>
 #include <algorithm>
 #include <cstring>
 #include <iostream>
 #include <vector>
 
 #include "CLog.h"
+
 #include "EpollFdEvent.h"
 #include "EpollLoop.h"
 #include "FdEvent.h"
 #include "Loop.h"
-#include <sys/epoll.h>
 
 const int EpollFdEvent::kNoneEvent = 0;
 const int EpollFdEvent::kReadEvent = EPOLLIN | EPOLLPRI;
@@ -50,7 +51,6 @@ void EpollFdEvent::remove()
 }
 
 bool EpollFdEvent::initialize(int fd, short events, Mode mode) {
-
   if (fd_ == nullptr) {
     fd_ = new Fd(fd);
   } else {

@@ -16,15 +16,15 @@ class EpollPoller {
  public:
   EpollPoller(EpollLoop* loop);
   ~EpollPoller();
-
+  //Poller启动Epoll池
   int poll(int timeoutMs, FdEventList* activeEvents);
-  
+  //更新事件
   void updateEvent(EpollFdEvent*  fdEvent);
-
+  //移除事件
   void removeEvent(EpollFdEvent* fdEvent);
-
+ //判断是否拥有事件
   bool hasEvent(EpollFdEvent* event) const;
-
+  //Epoll的文件描述符
   inline int epollFd(){return epollFd_;}
 
  private:
