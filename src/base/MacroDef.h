@@ -161,3 +161,23 @@ typename std::enable_if<!HasShutdown<T>::value>::type CallShutdown(
 #ifndef UNLIKELY
 #define UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
+
+//基于无参构造、析构、swap,实现reset与移动函数
+#define IMP_MOVE_RESET_FUNC_BASE_ON_SWAP(class_name) \
+    class_name::class_name(class_name&& other) \
+    { \
+        swap(other); \
+    } \
+    class_name& class_name::operator = (class_name&& other) \
+    { \
+        if (this != &other) { \
+            reset(); \
+            swap(other); \
+        } \
+        return *this; \
+    } \
+    void class_name::reset() \
+    { \
+        class_name tmp; \
+        swap(tmp); \
+    }

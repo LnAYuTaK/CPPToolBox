@@ -25,9 +25,8 @@
 #include <vector>
 
 class FileHelper {
-  enum FileType { TYPE_FILE, TYPE_DIR };
-
  public:
+  enum FileType { TYPE_FILE, TYPE_DIR };
   //文件是否存在
   static bool isFileExists(const std::string filename);
   //获取文件内容

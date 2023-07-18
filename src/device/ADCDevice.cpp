@@ -5,9 +5,9 @@
 #include <stdarg.h>
 #include <sys/ioctl.h>
 #include <unistd.h>
+#include <cassert>
 #include "CLog.h"
 #include "MacroDef.h"
-#include <cassert>
 
 #define ADS1115_ADDRESS1 (0x48 << 1) /**< iic address 1 */
 #define ADS1115_ADDRESS2 (0x49 << 1) /**< iic address 2 */
@@ -19,22 +19,18 @@
 #define ADS1115_REG_LOWRESH 0x02  /**< interrupt low threshold register */
 #define ADS1115_REG_HIGHRESH 0x03 /**< interrupt high threshold register */
 
-ADCDevice::ADCDevice() : type_(IODevice::ADCDeviceType), addr_(0) {}
-
 bool ADCDevice::init(const char *i2cPort, ADDR adress, CHANNEL channel,
-                     RANGE range, RATE rate ,COMPARE compare) 
-{
+                     RANGE range, RATE rate, COMPARE compare) {
   addr_ = convAddr(adress);
   channel_ = channel;
   range_ = range;
   rate_ = rate;
   compare_ = compare;
-  fd_ = ::open(i2cPort,O_RDWR);
+  fd_ = ::open(i2cPort, O_RDWR);
   /* check the fd */
-  if ((fd_) < 0)
-  {
-      CLOG_ERROR() << "Open ADC Device Error"; 
-      return false;
+  if ((fd_) < 0) {
+    CLOG_ERROR() << "Open ADC Device Error";
+    return false;
   }
   setChannel(channel_);
   setRate(rate_);
@@ -64,156 +60,125 @@ uint8_t ADCDevice::convAddr(ADDR adress) {
   return ADS1115_ADDRESS1;
 }
 
-bool ADCDevice::setChannel(CHANNEL channel)
-{
-    bool res;
-    uint16_t conf;
-    res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);       
-    if (!res)                                                                       
-    {
-      CLOG_ERROR()<<  "ADC Read Reg Config Error";                    
-      return false;                                                                        
-    }
-    conf &= ~(0x07 << 12);                                                                
-    conf |= (channel & 0x07) << 12;                                                      
-    res = ads1115Write(ADS1115_REG_CONFIG, conf);                  
-    if (!res)                                                                        
-    {
-      CLOG_ERROR()<< "ADC Write Reg Config Error";                           
-      return false;                                                                        
-    }
-    return 0;   
+bool ADCDevice::setChannel(CHANNEL channel) {
+  bool res;
+  uint16_t conf;
+  res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Read Reg Config Error";
+    return false;
+  }
+  conf &= ~(0x07 << 12);
+  conf |= (channel & 0x07) << 12;
+  res = ads1115Write(ADS1115_REG_CONFIG, conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Write Reg Config Error";
+    return false;
+  }
+  return 0;
 }
 
-bool ADCDevice::setRate(RATE rate)
-{
-    bool res;
-    uint16_t conf;
-    res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf); 
-    if (!res)                                                                        
-    {
-        CLOG_ERROR() << "ADC Read Reg Config Error";
-        return false;                                                                        
-    }
-    conf &= ~(0x07 << 5);                                                                
-    conf |= (rate & 0x07) << 5;     
-                                               
-    res = ads1115Write(ADS1115_REG_CONFIG, conf);                  
-    if (!res)                                                                        
-    {
-        CLOG_ERROR() << "ADC Write Reg Config Error";
-        return false;                                                                          
-    }
-    return true;    
+bool ADCDevice::setRate(RATE rate) {
+  bool res;
+  uint16_t conf;
+  res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Read Reg Config Error";
+    return false;
+  }
+  conf &= ~(0x07 << 5);
+  conf |= (rate & 0x07) << 5;
+
+  res = ads1115Write(ADS1115_REG_CONFIG, conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Write Reg Config Error";
+    return false;
+  }
+  return true;
 }
 
-bool ADCDevice::setRange(RANGE range)
-{
-    bool res;
-    uint16_t conf;
-    res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);     
-    if (!res)                                                                          
-    {
-      CLOG_ERROR()<<"ADC Read Reg Config Error";
-      return false;                                                                       
-    }
-    conf &= ~(0x07 << 9);                                                                
-    conf |= (range & 0x07) << 9;                                                         
-    res = ads1115Write(ADS1115_REG_CONFIG, conf);                  
-    if (!res)                                                                         
-    {
-      CLOG_ERROR()<<"ADC Write Reg Config Error";
-      return false;                                                                       
-    }
-    return true;   
+bool ADCDevice::setRange(RANGE range) {
+  bool res;
+  uint16_t conf;
+  res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Read Reg Config Error";
+    return false;
+  }
+  conf &= ~(0x07 << 9);
+  conf |= (range & 0x07) << 9;
+  res = ads1115Write(ADS1115_REG_CONFIG, conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Write Reg Config Error";
+    return false;
+  }
+  return true;
 }
 
-bool ADCDevice::setCompare(COMPARE compare)
-{
-    bool res;
-    uint16_t conf;
-    res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);     
-    if (!res)                                                                      
-    {
-      CLOG_ERROR()<<"ADC Read Reg Config Error";
-      return false;                                                                        
-    }
-    conf &= ~(0x01 << 2);                                                              
-    conf |= compare << 2;                                                                   
-    res = ads1115Write(ADS1115_REG_CONFIG, conf);               
-    if (!res)                                                                       
-    {
-      CLOG_ERROR()<<"ADC Write Reg Config Error";
-      return false;                                                                         
-    }
-    return true;  
+bool ADCDevice::setCompare(COMPARE compare) {
+  bool res;
+  uint16_t conf;
+  res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Read Reg Config Error";
+    return false;
+  }
+  conf &= ~(0x01 << 2);
+  conf |= compare << 2;
+  res = ads1115Write(ADS1115_REG_CONFIG, conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Write Reg Config Error";
+    return false;
+  }
+  return true;
 }
 
-bool ADCDevice::startContinuousRead()
-{
-    bool  res;
-    uint16_t conf;
-    res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);       
-    if (!res)                                                                          
-    {
-      CLOG_ERROR()<<"ADC Read Reg Config Error";
-      return false;                                                                         
-    }
-    conf &= ~(0x01 << 8);                                                                
-    res = ads1115Write(ADS1115_REG_CONFIG, conf);                  
-    if (!res)                                                                         
-    {
-      CLOG_ERROR()<<"ADC Write Reg Config Error";
-      return false;                                                                     
-    }
-    return true;  
+bool ADCDevice::startContinuousRead() {
+  bool res;
+  uint16_t conf;
+  res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Read Reg Config Error";
+    return false;
+  }
+  conf &= ~(0x01 << 8);
+  res = ads1115Write(ADS1115_REG_CONFIG, conf);
+  if (!res) {
+    CLOG_ERROR() << "ADC Write Reg Config Error";
+    return false;
+  }
+  return true;
 }
 
-bool ADCDevice::continuousRead(int16_t *raw, float *v)
-{
-    bool res;
-    uint8_t range;
-    uint16_t conf;
-    res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);      
-    if (!res)                                                                       
-    {
-        return false;                                                                        
-    }
-    range = (RANGE)((conf >> 9) & 0x07);                                      
-    res = ads1115Read(ADS1115_REG_CONVERT,raw);                 
-    if (!res)                                                                        
-    {    
-        return false;                                                                         
-    }
-    if (range == ADS1115_RANGE_6P144V)                                                    
-    {
-        *v = (float)(*raw) * 6.144f / 32768.0f;                                          
-    }
-    else if (range == ADS1115_RANGE_4P096V)                                               
-    {
-        *v = (float)(*raw) * 4.096f / 32768.0f;                                            
-    }
-    else if (range == ADS1115_RANGE_2P048V)                                                
-    {
-        *v = (float)(*raw) * 2.048f / 32768.0f;                                           
-    }
-    else if (range == ADS1115_RANGE_1P024V)                                              
-    {
-        *v = (float)(*raw) * 1.024f / 32768.0f;                                           
-    }
-    else if (range == ADS1115_RANGE_0P512V)                                             
-    {
-        *v = (float)(*raw) * 0.512f / 32768.0f;                                       
-    }
-    else if (range == ADS1115_RANGE_0P256V)                                              
-    {
-        *v = (float)(*raw) * 0.256f / 32768.0f;                                          
-    }
-    else
-    {
-        return false;                                                                       
-    }
-    return true;                                                                             
+bool ADCDevice::continuousRead(int16_t *raw, float *v) {
+  bool res;
+  uint8_t range;
+  uint16_t conf;
+  res = ads1115Read(ADS1115_REG_CONFIG, (int16_t *)&conf);
+  if (!res) {
+    return false;
+  }
+  range = (RANGE)((conf >> 9) & 0x07);
+  res = ads1115Read(ADS1115_REG_CONVERT, raw);
+  if (!res) {
+    return false;
+  }
+  if (range == ADS1115_RANGE_6P144V) {
+    *v = (float)(*raw) * 6.144f / 32768.0f;
+  } else if (range == ADS1115_RANGE_4P096V) {
+    *v = (float)(*raw) * 4.096f / 32768.0f;
+  } else if (range == ADS1115_RANGE_2P048V) {
+    *v = (float)(*raw) * 2.048f / 32768.0f;
+  } else if (range == ADS1115_RANGE_1P024V) {
+    *v = (float)(*raw) * 1.024f / 32768.0f;
+  } else if (range == ADS1115_RANGE_0P512V) {
+    *v = (float)(*raw) * 0.512f / 32768.0f;
+  } else if (range == ADS1115_RANGE_0P256V) {
+    *v = (float)(*raw) * 0.256f / 32768.0f;
+  } else {
+    return false;
+  }
+  return true;
 }
 
 bool ADCDevice::ads1115Read(uint8_t reg, int16_t *data) {
@@ -261,7 +226,7 @@ bool ADCDevice::iicRead(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len) {
   i2c_rdwr_data.msgs = msgs;
   i2c_rdwr_data.nmsgs = 2;
   if (ioctl(fd, I2C_RDWR, &i2c_rdwr_data) < 0) {
-    CLOG_ERROR() << "ERROR READ I2C!!!!!!!!!!!" ;
+    CLOG_ERROR() << "ERROR READ I2C!!!!!!!!!!!";
     return false;
   }
   return true;

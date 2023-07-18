@@ -1,10 +1,9 @@
 #include "IODevice.h"
 #include "ADCDevice.h"
-#include "UartDevice.h"
+#include "EpollLoop.h"
+#include "SerialDevice.h"
 
-UartDevice *  IODevice::creatUartDevice(EpollLoop * loop , std::string & name)
-{
-    
-   
-   return nullptr;
+SerialDevice* IODevice::creatSerialDevice(EpollLoop* loop,
+                                          const std::string& name) {
+  return new SerialDevice(loop, name);
 }

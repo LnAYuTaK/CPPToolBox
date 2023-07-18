@@ -1,43 +1,48 @@
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
-#include <memory>
 
-#include "Loop.h"
 #include "FdEvent.h"
+#include "Loop.h"
+#include "MacroDef.h"
 
-class  EpollPoller;
+class EpollPoller;
 class EpollFdEvent;
 class EpollLoop : public Loop {
+
+  DISALLOW_COPY_AND_ASSIGN(EpollLoop)
   
-  using FdEventList   = std::vector<EpollFdEvent*> ;
-  using PollerPtr     = std::unique_ptr<EpollPoller>;
+  using FdEventList = std::vector<EpollFdEvent*>;
+  using PollerPtr   = std::unique_ptr<EpollPoller>;
+  
  public:
   explicit EpollLoop();
-  virtual ~EpollLoop() override;
+  ~EpollLoop() override;
   // 是否与Loop在同一个线程内
-  virtual bool isInLoopThread() override;
+  bool isInLoopThread() override;
   // Loop是否正在运行
-  virtual bool isRunning() const override;
+  bool isRunning() const override;
   //开始运行EPoll循环
-  virtual void runLoop(Mode mode) override;
+  void runLoop(Mode mode = Mode::kForever) override;
   //创建普通的FD读写事件
-  virtual EpollFdEvent *creatFdEvent(const std::string &fdName) override;
-
-  virtual void exitLoop(const std::chrono::milliseconds &wait_time) override;
-
-  inline int epollFd() const ;
+  EpollFdEvent* creatFdEvent(const std::string& fdName) override;
+  //Exit Loop 
+  void exitLoop(const std::chrono::milliseconds& wait_time) override;
+  //Get EpollFD;
+  inline int epollFd() const;
 
   void updateEvent(EpollFdEvent* event);
   void removeEvent(EpollFdEvent* event);
   bool hasEvent(EpollFdEvent* event);
+
  private:
-  bool keepRunning_ ;
+  bool keepRunning_;
   FdEventList activeEvents_;
   EpollFdEvent* currentActiveEvent_;
-  bool eventHandling_; /* atomic */
+  bool eventHandling_;          /* atomic */
   bool callingPendingFunctors_; /* atomic */
   // int64_t iteration_;
-  PollerPtr  poller_;
+  PollerPtr poller_;
 };

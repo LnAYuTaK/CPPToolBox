@@ -26,12 +26,12 @@
 #include "FdEvent.h"
 #include "Loop.h"
 #include "Database.h"
-#include "SerialDriver.h"
 #include "TCPClient.h"
 #include "TCPServer.h"
 #include "ADCDevice.h"
+#include "SerialDevice.h"
 
-SERIAL_DRIVER_CLASS(serial1);
+// SERIAL_DRIVER_CLASS(serial1);
 
 #define FD_EVENT_TEST
 #define DB_FILE "test.db"
@@ -54,21 +54,9 @@ class Application {
     }
   }
   // Main Loop
-  Loop* loop() { return this->loop_; }
-
+  EpollLoop* loop() { return this->loop_; }
  private:
-  //内部资源
-
-  // TCPClientListener   cListener_;
-  //  CTcpPullClientPtr tcpClient_;
-  // TCPServerListener   sListener_;
-  //  CTcpPullServerPtr  tcpServer_;
-
-  serial1 serial;
-  Loop* loop_ = nullptr;
-
-  ADCDevice ads1115;
-  
+  EpollLoop* loop_ = nullptr;
 };
 
 //全局单例接口

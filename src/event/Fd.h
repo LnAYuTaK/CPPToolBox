@@ -16,11 +16,16 @@ class Fd {
   virtual ~Fd();
 
   Fd(const Fd &other);
+  Fd &operator=(const Fd &other);
 
+  Fd(Fd &&other);
+  Fd &operator=(Fd &&other);
+
+  void reset();  //! 重置本Fd
   void swap(Fd &other);
 
   //! 提前关闭资源，无论是否还有其它Fd对象引用
-  void close(); 
+  void close();
 
   inline bool isNull() const { return detail_ == nullptr || detail_->fd == -1; }
 

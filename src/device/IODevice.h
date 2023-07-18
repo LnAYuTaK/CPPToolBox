@@ -10,26 +10,27 @@
 
 #include <iostream>
 #include <string>
-class UartDevice;
+
+class SerialDevice;
 class ADCDevice;
 class EpollLoop;
-
 class IODevice {
  public:
-  enum DriverType { SerialType, ADCDeviceType, SpiType, GPIOType};
   IODevice() {}
-  virtual~IODevice(){}
-  virtual DriverType type() const = 0;
+  virtual ~IODevice() {}
   //初始化
-  virtual bool init(){return true;}
+  virtual bool init() { return true; }
   //开启
   virtual bool start() = 0;
   //停止
   virtual void stop() = 0;
-   //关闭
-  virtual void close()  = 0;
-   //清理
+  //关闭
+  virtual void close() = 0;
+  //清理
   virtual void cleanup() = 0;
-
-  UartDevice *  creatUartDevice(EpollLoop * loop , std::string & name);
+  // name
+  std::string name() const { return name_; }
+  std::string name_;
+  static SerialDevice* creatSerialDevice(EpollLoop* loop,
+                                         const std::string& name);
 };

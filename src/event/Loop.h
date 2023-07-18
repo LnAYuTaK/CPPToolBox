@@ -7,9 +7,10 @@
 
 class FdEvent;
 class EpollFdEvent;
+class EpollLoop;
 class Loop {
  public:
-  static Loop *New();
+  static EpollLoop *New();
   //! 获取引擎列表
   enum class Mode {
     kOnce,    //!< 仅执行一次
@@ -29,7 +30,7 @@ class Loop {
   //! 委托延后执行动作
   using Func = std::function<void()>;
 
-  virtual  EpollFdEvent *creatFdEvent(const std::string &fd_name = "") = 0;
+  virtual EpollFdEvent *creatFdEvent(const std::string &fd_name = "") = 0;
 
   //! 阈值
   struct WaterLine {

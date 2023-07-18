@@ -70,6 +70,7 @@ public:
                       itas109::DataBits dataBits = itas109::DataBits8,
                       itas109::StopBits stopbits = itas109::StopOne,
                       itas109::FlowControl flowControl = itas109::FlowNone,
+                      
                       unsigned int readBufferSize = 4096);
 
     /**

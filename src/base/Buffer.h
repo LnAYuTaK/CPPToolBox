@@ -1,7 +1,7 @@
 /**
  * @file Buffer.h
  * @author LnAYuTaK (807874484@qq.com)
- * @brief 缓存区模板
+ * @brief Thread缓存区模板
  * @version 0.1
  * @date 2023-07-11
  *

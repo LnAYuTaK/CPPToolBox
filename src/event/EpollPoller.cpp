@@ -8,10 +8,9 @@
 #include <sys/epoll.h>
 #include <unistd.h>
 
-
+#include "CLog.h"
 #include "MacroDef.h"
 #include "Utils.h"
-#include "CLog.h"
 
 namespace {
 const int kNew = -1;
@@ -22,7 +21,6 @@ const int kDeleted = 2;
 #ifndef DEFAULT_MAX_LOOP_ENTRIES
 #define DEFAULT_MAX_LOOP_ENTRIES (256)
 #endif
-
 
 EpollPoller::EpollPoller(EpollLoop* loop)
     : epollFd_(::epoll_create1(EPOLL_CLOEXEC)),
@@ -57,8 +55,8 @@ void EpollPoller::fillActiveEvents(int numEvents,
                                    FdEventList* activeEvents) const {
   assert(static_cast<size_t>(numEvents) <= events_.size());
   for (int i = 0; i < numEvents; ++i) {
-    EpollFdEvent* fdEvent =static_cast<EpollFdEvent*>(events_[i].data.ptr);
-    int fd =  fdEvent->fd();
+    EpollFdEvent* fdEvent = static_cast<EpollFdEvent*>(events_[i].data.ptr);
+    int fd = fdEvent->fd();
     auto it = fdEventMaps_.find(fd);
     assert(it != fdEventMaps_.end());
     assert(it->second == fdEvent);
@@ -68,7 +66,7 @@ void EpollPoller::fillActiveEvents(int numEvents,
 }
 
 void EpollPoller::updateEvent(EpollFdEvent* fdEvent) {
-  const int index = fdEvent->index(); 
+  const int index = fdEvent->index();
   //如果是新增加事件或者已经删除事件
   if (index == kNew || index == kDeleted) {
     // a new one, add with EPOLL_CTL_ADD
@@ -77,8 +75,7 @@ void EpollPoller::updateEvent(EpollFdEvent* fdEvent) {
     if (index == kNew) {
       assert(fdEventMaps_.find(fd) == fdEventMaps_.end());
       fdEventMaps_[fd] = fdEvent;
-    } 
-    else  {
+    } else {
       assert(fdEventMaps_.find(fd) != fdEventMaps_.end());
       assert(fdEventMaps_[fd] == fdEvent);
     }
@@ -122,9 +119,9 @@ void EpollPoller::update(int operation, EpollFdEvent* fdEvent) {
   int fd = fdEvent->fd();
   if (::epoll_ctl(epollFd_, operation, fd, &event) < 0) {
     if (operation == EPOLL_CTL_DEL) {
-        CLOG_ERROR()  << fdEvent->name() << ": Update  Epoll Error";
+      CLOG_ERROR() << fdEvent->name() << ": Update  Epoll Error";
     } else {
-        CLOG_ERROR()  << fdEvent->name() << ": Update  Epoll Error";
+      CLOG_ERROR() << fdEvent->name() << ": Update  Epoll Error";
     }
   }
 }
@@ -132,4 +129,3 @@ bool EpollPoller::hasEvent(EpollFdEvent* event) const {
   FdEvenMap::const_iterator it = fdEventMaps_.find(event->fd());
   return it != fdEventMaps_.end() && it->second == event;
 }
-

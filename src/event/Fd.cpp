@@ -40,6 +40,18 @@ Fd::Fd(const Fd &other) {
   }
 }
 
+Fd &Fd::operator=(const Fd &other) {
+  if (this != &other) {
+    if (other.detail_ != nullptr) {
+      ++other.detail_->ref_count;
+      detail_ = other.detail_;
+    }
+  }
+  return *this;
+}
+
+IMP_MOVE_RESET_FUNC_BASE_ON_SWAP(Fd)
+
 void Fd::swap(Fd &other) { std::swap(detail_, other.detail_); }
 
 void Fd::close() {

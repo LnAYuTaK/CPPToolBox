@@ -16,85 +16,61 @@ const int EpollFdEvent::kReadEvent = EPOLLIN | EPOLLPRI;
 const int EpollFdEvent::kWriteEvent = EPOLLOUT;
 
 EpollFdEvent::EpollFdEvent(EpollLoop *wpLoop, const std::string &name)
-    : FdEvent(name)
-    ,loop_(wpLoop)
-    ,fd_(nullptr)
-    ,addedToLoop_(false)
-    ,isStopAfterTrigger_(false)
-    ,revents_  (0)
-    ,index_(-1)
-    ,events_(0)
-    ,isEnabled_(false)
-    ,eventHandling_(false)
-     {
-     }
+    : FdEvent(name),
+      loop_(wpLoop),
+      addedToLoop_(false),
+      isStopAfterTrigger_(false),
+      revents_(0),
+      index_(-1),
+      events_(0),
+      isEnabled_(false),
+      eventHandling_(false) {}
 
-EpollFdEvent::~EpollFdEvent() {
-  if(fd_!=nullptr)
-  {
-    fd_->close();
-    delete fd_;
-  }
-}
+EpollFdEvent::~EpollFdEvent() { CHECK_CLOSE_RESET_FD(fd_); }
 
-void EpollFdEvent::update()
-{
+void EpollFdEvent::update() {
   addedToLoop_ = true;
   loop_->updateEvent(this);
 }
 
-void EpollFdEvent::remove()
-{
+void EpollFdEvent::remove() {
   assert(isNoneEvent());
   addedToLoop_ = false;
   loop_->removeEvent(this);
 }
 
-bool EpollFdEvent::initialize(int fd, short events, Mode mode) {
-  if (fd_ == nullptr) {
-    fd_ = new Fd(fd);
-  } else {
-    CLOG_ERROR() << name() <<": Epoll Init Error";
-    return false;
-  }
+bool EpollFdEvent::init(int fd, Mode mode) {
+  fd_ = fd;
   if (mode == FdEvent::Mode::kOneshot) {
     isStopAfterTrigger_ = true;
   }
   return true;
 }
 
-void EpollFdEvent::handleEvent(int time)
-{
-//Lock //
+void EpollFdEvent::handleEvent(int time) {
+  // Lock //
   handleLockEvent(time);
 }
 
-void EpollFdEvent::handleLockEvent(int receiveTime)
-{
+void EpollFdEvent::handleLockEvent(int receiveTime) {
   //记录事件
   eventHandling_ = true;
-  if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN))
-  {
+  if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN)) {
     if (closeCallback_) closeCallback_();
   }
-  if (revents_ & EPOLLERR)
-  {
-   CLOG_WARN()<< name() << ": EpollError";
+  if (revents_ & EPOLLERR) {
+    CLOG_WARN() << name() << ": EpollError";
   }
-  if (revents_ & (EPOLLERR | EPOLLERR))
-  {
+  if (revents_ & (EPOLLERR | EPOLLERR)) {
     if (errorCallback_) errorCallback_();
   }
-  if (revents_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP))
-  {
+  if (revents_ & (EPOLLIN | EPOLLPRI | EPOLLRDHUP)) {
+    // Read
     if (readCallback_) readCallback_(receiveTime);
   }
-  if (revents_ & EPOLLOUT)
-  {
+  if (revents_ & EPOLLOUT) {
     if (writeCallback_) writeCallback_();
   }
   eventHandling_ = false;
   //记录时间//
 }
-
-

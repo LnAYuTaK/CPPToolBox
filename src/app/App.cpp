@@ -2,8 +2,8 @@
 #include "App.h"
 /***********************************************************/
 //实例化模块
-Application::Application(/* args */) : loop_(Loop::New()) 
-                                    // ,tcpClient_(&cListener_)                                                                    ,tcpServer_(&sListener_)
+Application::Application(/* args */) 
+                          :loop_(Loop::New())
 {
 
 }
@@ -19,8 +19,22 @@ void Application::init(/* args */) {
 /***********************************************************/
 void Application::start() {
 
+  auto uart1 = IODevice::creatSerialDevice(loop_,"UART1");
+  if(uart1->init("/dev/ttyS4"))
+  {
+    uart1->setReadCallback([&](Bytes * buffer,size_t bufferLen){
+
+      
+         
+    });
+    CLOG_INFO() << "DEBUG1";
+  }
+  uart1->start();
+  CLOG_INFO() << "DEBUG3";
+
+
   //  auto fds = loop()->creatFdEvent("STDIO");
-  //  fds->initialize(STDIN_FILENO,1,Event::Mode::kPersist);
+  //  fds->init(STDIN_FILENO,Event::Mode::kPersist);
   //  fds->setReadCallback([&](int fd){
   //     char buffer[256];
   //     bzero(buffer, sizeof(buffer));
@@ -28,30 +42,13 @@ void Application::start() {
   //     CLOG_INFO() << buffer;
   //  });
   //  fds->enableReading();
-  ads1115.init("/dev/i2c-2");
-  ads1115.start();
-  float s= 0 ;
-  for (int i = 0; i < 20; i++)
-  {
-     ads1115.ads1115Read(&s);
-     CLOG_INFO() << s;
-     THREAD_SLEEP_MS(200);
-  }
-}
-/***********************************************************/
-void serial1::onReadEvent(const char* portName, unsigned int readBufferLen) {
-  if (readBufferLen > 0) {
-    char* data = new char[readBufferLen + 1];  // '\0'
-    if (data) {
-      // read
-      int recLen = readData(data, readBufferLen);
-      if (recLen > 0) {
-        data[recLen] = '\0';
-        std::cout << portName << ", Length: " << recLen << ", Str: " << data
-                  << std::endl;
-      }
-      delete[] data;
-      data = nullptr;
-    }
-  }
+  // ads1115.init("/dev/i2c-2");
+  // ads1115.start();
+  // float s= 0 ;
+  // for (int i = 0; i < 20; i++)
+  // {
+  //    ads1115.ads1115Read(&s);
+  //    CLOG_INFO() << s;
+  //    THREAD_SLEEP_MS(200);
+  // }
 }
