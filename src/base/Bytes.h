@@ -54,6 +54,12 @@ class Bytes {
     data.insert(data.end(), bytes.data.begin(), bytes.data.end());
   }
 
+    template <typename T>
+    inline void append(const T* dataPtr, size_t dataSize) {
+      const uint8_t* bytePtr = reinterpret_cast<const uint8_t*>(dataPtr);
+      data.insert(data.end(), bytePtr, bytePtr + dataSize);
+    }
+
   inline void append(Iterator begin, Iterator end) {
     data.insert(data.end(), begin, end);
   }

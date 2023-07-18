@@ -20,18 +20,8 @@ void Application::init(/* args */) {
 void Application::start() {
 
   auto uart1 = IODevice::creatSerialDevice(loop_,"UART1");
-  if(uart1->init("/dev/ttyS4"))
-  {
-    uart1->setReadCallback([&](Bytes * buffer,size_t bufferLen){
-
-      
-         
-    });
-    CLOG_INFO() << "DEBUG1";
-  }
-  uart1->start();
-  CLOG_INFO() << "DEBUG3";
-
+  CLOG_DEBUG()  << ": DEBUG2";
+  uart1->init("/dev/ttyTHS1") ;
 
   //  auto fds = loop()->creatFdEvent("STDIO");
   //  fds->init(STDIN_FILENO,Event::Mode::kPersist);

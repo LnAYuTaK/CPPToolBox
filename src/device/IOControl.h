@@ -44,7 +44,7 @@ class IOControl {
   };
 
   enum PinState { GPIO_RESET, GPIO_SET };
-
+  //设置GPIO 电平
   static void setValue(GPIO_FUNC gpio_no, PinState state) {
     unsigned long val;
     int fd = openFd();
@@ -58,6 +58,7 @@ class IOControl {
       CLOG_ERROR() << "Set GPIO:" << (int)gpio_no << "ERROR";
     }
   }
+  //获取GPIO 电平
   static int getValue(GPIO_FUNC gpio_no) {
     int fd = openFd();
     unsigned long val = gpio_no;

@@ -20,7 +20,7 @@ class EpollLoop : public Loop {
  public:
   explicit EpollLoop();
   ~EpollLoop() override;
-  // 是否与Loop在同一个线程内
+  // 是否与Loop在同一个线程内TUDO
   bool isInLoopThread() override;
   // Loop是否正在运行
   bool isRunning() const override;

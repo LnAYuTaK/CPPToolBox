@@ -57,7 +57,7 @@ typename std::enable_if<!HasShutdown<T>::value>::type CallShutdown(
 #define DISALLOW_COPY_AND_ASSIGN(classname)         \
   classname(const classname &) = delete;            \
   classname(const classname &&) = delete;           \
-  classname &operator=(const classname &) = delete; \
+  classname &operator=(const classname &) = delete;  \
   classname &operator=(classname &&) = delete;
 
 //单例注册宏

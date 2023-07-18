@@ -8,12 +8,10 @@
 #include "Fd.h"
 #include "IODevice.h"
 #include "Module.h"
+#include "MacroDef.h"
 class SerialDevice : public IODevice {
 
-  DISALLOW_COPY_AND_ASSIGN(SerialDevice)
-
   using ReadCallBack = std::function<void(Bytes *buffer, size_t bufferLen)>;
-  
  public:
  //TUDO
   struct SerialDeviceInfo {
@@ -68,28 +66,29 @@ class SerialDevice : public IODevice {
     FlowHardware = 1,  ///< Hardware(RTS / CTS) flow control 硬件流控制
     FlowSoftware = 2   ///< Software(XON / XOFF) flow control 软件流控制
   };
-
   SerialDevice(EpollLoop *loop, const std::string &name);
   ~SerialDevice() override;
-
+   //初始化
   bool init(const std::string &portName, BaudRate baudRate = BaudRate9600,
             Parity parity = ParityNone, DataBits dataBits = DataBits8,
             StopBits stopbits = StopOne, FlowControl flowControl = FlowNone,
             OperateMode mode = AsynchronousOperate,
             size_t readBufferSize = 4096);
-
+            
+  //Form  IODevice
   bool start() override;
   void stop() override;
   void close() override;
   void cleanup() override;
-
+  //设置读取回调
   void setReadCallback(ReadCallBack &&cb);
-
  private:
+ //设置串口属性
   bool uartSet(Fd &fd, BaudRate baudRate, Parity parity, DataBits dataBits,
                StopBits stopbits, FlowControl flowControl);
-
+  
   int baudRate2Enum(int baudrate);
+  //读取处理Epoll驱动事件
   void onReadCallBack();
   Fd fd_;
   EpollLoop *loop_;

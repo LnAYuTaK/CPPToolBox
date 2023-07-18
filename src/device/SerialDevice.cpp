@@ -24,7 +24,7 @@ SerialDevice::SerialDevice(EpollLoop *loop, const std::string &name)
       serialEvent_(nullptr),
       readBuffer_(nullptr),
       writeBuffer_(nullptr) {
-  name_ = name;
+      name_ = name;
 }
 SerialDevice::~SerialDevice() { cleanup(); }
 
@@ -32,37 +32,61 @@ bool SerialDevice::init(const std::string &portName, BaudRate baudRate,
                         Parity parity, DataBits dataBits, StopBits stopbits,
                         FlowControl flowControl, OperateMode mode,
                         size_t bufferSize) {
+CLOG_DEBUG()  << ": DEBUG3";
+  if(state()  != State::kNone){
+      return false;
+  }
   mode_ = mode;
   CHECK_DELETE_RESET_OBJ(readBuffer_);
   CHECK_DELETE_RESET_OBJ(writeBuffer_);
-
+CLOG_DEBUG()  << ": DEBUG4";
   readBuffer_ = new Bytes(bufferSize_);
   writeBuffer_ = new Bytes(bufferSize_);
-
   serialEvent_ = loop_->creatFdEvent(name_);
+   CLOG_DEBUG()  << ": DEBUG5";
   fd_ = Fd::Open(portName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-  CLOG_ERROR() << portName.c_str() << fd_.get();
-
+  CLOG_DEBUG()  << ": DEBUG6";
   if (!(serialEvent_->init(fd_.get(), Event::Mode::kPersist))) {
-    CLOG_ERROR() << name_ << "Serial Event Init Error";
-    cleanup();
+    CLOG_ERROR() <<  name_ << ": Serial Event Init Error";
     return false;
   }
+     CLOG_DEBUG()  << ": DEBUG7";
   if (!(uartSet(fd_, baudRate, parity, dataBits, stopbits, flowControl))) {
-    CLOG_ERROR() << name_ << ": " << portName << "Serial Set Error";
+    CLOG_ERROR() <<   name_ << ":  " << portName << " Serial Set Error";
     return false;
   }
+  setState(State::kInited);
   return true;
 }
 
 bool SerialDevice::start() {
-  serialEvent_->enableReading();
-  return true;
+  if(state()  == State::kInited ) {
+      serialEvent_->enableReading();
+      setState(State::kRunning);
+      return true;
+  }
+  else {
+    if(state() == State::kNone) {
+          CLOG_WARN() << name() << ":  Serial  Need Init";
+    }
+     return false;
+  }
 }
 
-void SerialDevice::stop() {}
+void SerialDevice::stop() {
+  if(state()  == State::kRunning) {
+       serialEvent_-> disableAll();
+  }
+  else {
+    CLOG_WARN() << name() << ":  Serial  Need Init";
+  }
+}
 
-void SerialDevice::close() {}
+void SerialDevice::close() {
+          stop();
+          cleanup();
+          setState(State::kNone);
+}
 
 void SerialDevice::cleanup() {
 
@@ -72,11 +96,10 @@ void SerialDevice::cleanup() {
 }
 
 void SerialDevice::setReadCallback(ReadCallBack &&cb) {
-  CLOG_INFO() << "Set ReadCall Back";
   readCallBack_ = std::move(cb);
   if (readCallBack_) {
     if (serialEvent_) {
-      serialEvent_->setReadCallback([&](int time) {
+          serialEvent_->setReadCallback([&](int time) {
         { this->onReadCallBack(); }
       });
     }
@@ -113,16 +136,14 @@ bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
       options.c_cflag |= PARENB;  // PARENB：产生奇偶位，执行奇偶校验
       options.c_cflag |= PARODD;  // PARODD：若设置则为奇校验,否则为偶校验
       options.c_cflag |= INPCK;  // INPCK：使奇偶校验起作用
-      options.c_cflag |=
-          ISTRIP;  // ISTRIP：若设置则有效输入数字被剥离7个字节，否则保留全部8位
+      options.c_cflag |= ISTRIP;  // ISTRIP：若设置则有效输入数字被剥离7个字节，否则保留全部8位
       break;
     // 设置偶校验
     case ParityEven:
       options.c_cflag |= PARENB;  // PARENB：产生奇偶位，执行奇偶校验
       options.c_cflag &= ~PARODD;  // PARODD：若设置则为奇校验,否则为偶校验
       options.c_cflag |= INPCK;  // INPCK：使奇偶校验起作用
-      options.c_cflag |=
-          ISTRIP;  // ISTRIP：若设置则有效输入数字被剥离7个字节，否则保留全部8位
+      options.c_cflag |=ISTRIP;  // ISTRIP：若设置则有效输入数字被剥离7个字节，否则保留全部8位
       break;
     // 设置0校验
     case ParitySpace:
@@ -192,10 +213,9 @@ bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
   options.c_cflag |= CREAD | HUPCL | CLOCAL;
   options.c_lflag &= ~(ISIG | ICANON | ECHO | IEXTEN);
   tcflush(fd.get(), TCIFLUSH);
-
-  // // 激活配置
+  //激活配置
   if (tcsetattr(fd.get(), TCSANOW, &options) < 0) {
-    CLOG_ERROR() << "Unknow Tcsetattr FlowControl";
+    CLOG_ERROR() << " Tcsetattr  Serial Error";
     return false;
   }
   return true;
@@ -334,22 +354,38 @@ int SerialDevice::baudRate2Enum(int baudrate) {
 
 void SerialDevice::onReadCallBack()
 {
+  if(readBuffer_  ==  nullptr)
+  {
+    return ;
+  }
+  //双缓存读取
   struct iovec rbuf[2];
-  char extbuf[1024];  //! 扩展存储空间 
-  // char buffer[256];
-  // bzero(buffer,sizeof(buffer));
-  //try Read
-  ssize_t rsize  = fd_.readv(rbuf,2);
-  if(rsize > 0 )
-  {
-    do
-    {
+  char bufferTemp[1024];
+  char bufferTemp2[1024];
+  bzero(bufferTemp,sizeof(bufferTemp));
+  bzero(bufferTemp2,sizeof(bufferTemp2));
 
-    } while ((rsize = fd_.readv(rbuf, 2)) > 0);
-  }
-  if(rsize == 0)
-  {
-    serialEvent_->disableReading();
-  }
+  rbuf[0].iov_base = bufferTemp;
+  rbuf[0].iov_len  = sizeof(bufferTemp);
+  rbuf[1].iov_base = bufferTemp2;
+  rbuf[1].iov_len  = sizeof(bufferTemp2);
 
+  ssize_t rsize = fd_.readv(rbuf, 2);
+  if(rsize> 0 ) {    //说明读取到了数据
+      do {
+            //如果一次读取超过了缓存区1 那么数据应该在缓存区2有一部分
+            if (static_cast<size_t>(rsize) > sizeof(bufferTemp))
+            {
+                 //那么超过的数据应该是
+                size_t reMainData =  rsize -sizeof(bufferTemp); 
+                readBuffer_->append(bufferTemp,sizeof(bufferTemp));
+                readBuffer_->append(bufferTemp2,reMainData);
+            }
+            else
+            {
+                 readBuffer_->append(bufferTemp,rsize);   
+            }
+      } while (rsize > 0);
+  }
+  CLOG_INFO()<< readBuffer_->ptr();
 }
