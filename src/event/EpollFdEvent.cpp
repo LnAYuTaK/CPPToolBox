@@ -24,10 +24,8 @@ EpollFdEvent::EpollFdEvent(EpollLoop *wpLoop, const std::string &name)
       index_(-1),
       events_(0),
       isEnabled_(false),
-      eventHandling_(false) {
-
-        CLOG_DEBUG() << "EROR7";
-      }
+      eventHandling_(false) 
+      {}
 
 EpollFdEvent::~EpollFdEvent() { CHECK_CLOSE_RESET_FD(fd_); }
 

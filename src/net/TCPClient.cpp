@@ -1,7 +1,6 @@
 #include "TCPClient.h"
 
 #include "App.h"
-#include "Bytes.h"
 #include "CLog.h"
 
 EnHandleResult TCPClientListener::OnPrepareConnect(ITcpClient* pSender,
@@ -22,11 +21,11 @@ EnHandleResult TCPClientListener::OnHandShake(ITcpClient* pSender,
 /***********************************************************************************************/
 EnHandleResult TCPClientListener::OnReceive(ITcpClient* pSender,
                                             CONNID dwConnID, int iLength) {
-  Bytes buffer(iLength);
-  buffer.clear();
-  ITcpPullClient* pClient = ITcpPullClient::FromS(pSender);
-  EnFetchResult result = pClient->Fetch(buffer.ptr(), iLength);
-  std::cout << buffer.ptr() << std::endl;
+  // Bytes buffer(iLength);
+  // buffer.clear();
+  // ITcpPullClient* pClient = ITcpPullClient::FromS(pSender);
+  // EnFetchResult result = pClient->Fetch(buffer.ptr(), iLength);
+  // std::cout << buffer.ptr() << std::endl;
   return HR_OK;
 }
 /***********************************************************************************************/

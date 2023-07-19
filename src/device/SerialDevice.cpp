@@ -9,7 +9,6 @@
 #include <string.h>
 #include <unistd.h>
 #include <string>
-#include "Bytes.h"
 #include "CLog.h"
 #include "MacroDef.h"
 
@@ -22,8 +21,8 @@ SerialDevice::SerialDevice(EpollLoop *loop, const std::string &name)
     : loop_(loop),
       fd_(-1),
       serialEvent_(nullptr),
-      readBuffer_(nullptr),
-      writeBuffer_(nullptr) {
+      readBuffer_(),
+      writeBuffer_() {
       name_ = name;
 }
 SerialDevice::~SerialDevice() { cleanup(); }
@@ -32,25 +31,20 @@ bool SerialDevice::init(const std::string &portName, BaudRate baudRate,
                         Parity parity, DataBits dataBits, StopBits stopbits,
                         FlowControl flowControl, OperateMode mode,
                         size_t bufferSize) {
-CLOG_DEBUG()  << ": DEBUG3";
   if(state()  != State::kNone){
       return false;
   }
   mode_ = mode;
-  CHECK_DELETE_RESET_OBJ(readBuffer_);
-  CHECK_DELETE_RESET_OBJ(writeBuffer_);
-CLOG_DEBUG()  << ": DEBUG4";
-  readBuffer_ = new Bytes(bufferSize_);
-  writeBuffer_ = new Bytes(bufferSize_);
+  //Rsize 
+  readBuffer_.capacity((int)bufferSize);
+  writeBuffer_.capacity((int)bufferSize);
   serialEvent_ = loop_->creatFdEvent(name_);
-   CLOG_DEBUG()  << ": DEBUG5";
-  fd_ = Fd::Open(portName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
-  CLOG_DEBUG()  << ": DEBUG6";
+  fd_ = Fd::Open(portName.c_str(), O_RDWR | O_NOCTTY|O_NDELAY);
+  fd_.setNonBlock(true);
   if (!(serialEvent_->init(fd_.get(), Event::Mode::kPersist))) {
     CLOG_ERROR() <<  name_ << ": Serial Event Init Error";
     return false;
   }
-     CLOG_DEBUG()  << ": DEBUG7";
   if (!(uartSet(fd_, baudRate, parity, dataBits, stopbits, flowControl))) {
     CLOG_ERROR() <<   name_ << ":  " << portName << " Serial Set Error";
     return false;
@@ -83,29 +77,23 @@ void SerialDevice::stop() {
 }
 
 void SerialDevice::close() {
-          stop();
-          cleanup();
-          setState(State::kNone);
+        stop();
+        cleanup();
+        setState(State::kNone);
 }
 
 void SerialDevice::cleanup() {
-
-    CHECK_DELETE_RESET_OBJ(writeBuffer_);
-    CHECK_DELETE_RESET_OBJ(readBuffer_);
     CHECK_DELETE_RESET_OBJ(serialEvent_);
 }
 
 void SerialDevice::setReadCallback(ReadCallBack &&cb) {
+
   readCallBack_ = std::move(cb);
-  if (readCallBack_) {
     if (serialEvent_) {
           serialEvent_->setReadCallback([&](int time) {
         { this->onReadCallBack(); }
       });
     }
-  } else {
-    CLOG_ERROR() << "Serial Need init First";
-  }
 }
 
 bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
@@ -154,7 +142,6 @@ bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
       CLOG_ERROR() << "unknown Serial  Party";
       return false;
   }
-
   // 设置数据位
   switch (dataBits) {
     case DataBits5:
@@ -177,7 +164,6 @@ bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
       CLOG_ERROR() << "Unknow Serial DataBits";
       return false;
   }
-
   // 停止位
   switch (stopbits) {
     case StopOne:
@@ -205,7 +191,6 @@ bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
       CLOG_ERROR() << "Unknow Serial FlowControl";
       return false;
   }
-
   options.c_iflag &= ~(INLCR | IGNCR | ICRNL | IUCLC | IXON | IXANY | IXOFF);
   options.c_iflag |= IGNBRK | IGNPAR;
   options.c_oflag &= ~(OPOST | OLCUC | ONLCR | OCRNL | ONOCR | ONLRET);
@@ -219,6 +204,60 @@ bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
     return false;
   }
   return true;
+}
+
+void SerialDevice::onReadCallBack()
+{
+  //双缓存读取
+  struct iovec rbuf[2];
+  char bufferTemp[1024];
+  char bufferTemp2[1024];
+  bzero(bufferTemp,sizeof(bufferTemp));
+  bzero(bufferTemp2,sizeof(bufferTemp2));
+
+  rbuf[0].iov_base = bufferTemp;
+  rbuf[0].iov_len  = sizeof(bufferTemp);
+  rbuf[1].iov_base = bufferTemp2;
+  rbuf[1].iov_len  = sizeof(bufferTemp2);
+
+  ssize_t rsize = fd_.readv(rbuf, 2);
+  if(rsize> 0) {    //说明读取到了数据
+      do {
+            //如果一次读取超过了缓存区1 那么数据应该在缓存区2有一部分
+            if (static_cast<size_t>(rsize) > sizeof(bufferTemp)) {
+                 //那么超过的数据应该是
+              size_t reMainData =  rsize -sizeof(bufferTemp); 
+              readBuffer_.writeBytes(bufferTemp,sizeof(bufferTemp)).writeBytes(bufferTemp2,reMainData);
+            }
+            else {
+                readBuffer_.writeBytes(bufferTemp,rsize); 
+            }
+      } while (rsize = fd_.readv(rbuf, 2) > 0);
+      if(readCallBack_)
+      {
+        readCallBack_(readBuffer_.data(),readBuffer_.writerIndex());
+      }
+  }
+  else if(rsize == 0){
+     CLOG_INFO() << "READ ZERO";
+  }
+  else{
+     CLOG_ERROR() << "Read Buffer Error";
+  }
+  readBuffer_.clear();
+}
+
+void SerialDevice::onWriteCallBack(){
+ 
+  if(writeBuffer_.readerIndex()== 0)
+  {
+    serialEvent_->disableWriting();
+    return;
+  }
+  else
+  {
+    ssize_t wsize = fd_.write(readBuffer_.data(),readBuffer_.readerIndex());
+  }
 }
 
 int SerialDevice::baudRate2Enum(int baudrate) {
@@ -350,42 +389,4 @@ int SerialDevice::baudRate2Enum(int baudrate) {
     default:
       return -1;
   }
-}
-
-void SerialDevice::onReadCallBack()
-{
-  if(readBuffer_  ==  nullptr)
-  {
-    return ;
-  }
-  //双缓存读取
-  struct iovec rbuf[2];
-  char bufferTemp[1024];
-  char bufferTemp2[1024];
-  bzero(bufferTemp,sizeof(bufferTemp));
-  bzero(bufferTemp2,sizeof(bufferTemp2));
-
-  rbuf[0].iov_base = bufferTemp;
-  rbuf[0].iov_len  = sizeof(bufferTemp);
-  rbuf[1].iov_base = bufferTemp2;
-  rbuf[1].iov_len  = sizeof(bufferTemp2);
-
-  ssize_t rsize = fd_.readv(rbuf, 2);
-  if(rsize> 0 ) {    //说明读取到了数据
-      do {
-            //如果一次读取超过了缓存区1 那么数据应该在缓存区2有一部分
-            if (static_cast<size_t>(rsize) > sizeof(bufferTemp))
-            {
-                 //那么超过的数据应该是
-                size_t reMainData =  rsize -sizeof(bufferTemp); 
-                readBuffer_->append(bufferTemp,sizeof(bufferTemp));
-                readBuffer_->append(bufferTemp2,reMainData);
-            }
-            else
-            {
-                 readBuffer_->append(bufferTemp,rsize);   
-            }
-      } while (rsize > 0);
-  }
-  CLOG_INFO()<< readBuffer_->ptr();
 }

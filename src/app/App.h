@@ -14,8 +14,8 @@
 #include <memory>
 #include <string>
 #include <thread>
+#include "ByteBuf.h"
 // user
-#include "Bytes.h"
 #include "CLog.h"
 #include "FileHelper.h"
 #include "IOControl.h"
@@ -30,8 +30,9 @@
 #include "TCPServer.h"
 #include "ADCDevice.h"
 #include "SerialDevice.h"
+//TEST
+#include "CSerialPort/SerialPort.h"
 
-// SERIAL_DRIVER_CLASS(serial1);
 
 #define FD_EVENT_TEST
 #define DB_FILE "test.db"
@@ -57,6 +58,8 @@ class Application {
   EpollLoop* loop() { return this->loop_; }
  private:
   EpollLoop* loop_ = nullptr;
+  
+
 };
 
 //全局单例接口

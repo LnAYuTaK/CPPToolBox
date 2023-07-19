@@ -104,8 +104,8 @@ void Fd::setNonBlock(bool enable) const {
   if (new_flags != old_flags) {
     int ret = fcntl(detail_->fd, F_SETFL, new_flags);
     if (ret == -1) {
+      CLOG_ERROR() << " Fcntl Error : ";
     }
-    CLOG_ERROR() << " Fcntl Error : ";
   }
 #else
 #error No way found to set non-blocking mode for fds.

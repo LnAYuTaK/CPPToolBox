@@ -1,7 +1,6 @@
 #include "TCPServer.h"
 #include "App.h"
 
-#include "Bytes.h"
 #include "CLog.h"
 EnHandleResult TCPServerListener::OnPrepareListen(ITcpServer* pSender,
                                                   SOCKET soListen) {
@@ -20,11 +19,11 @@ EnHandleResult TCPServerListener::OnHandShake(ITcpServer* pSender,
 /***********************************************************************************************/
 EnHandleResult TCPServerListener::OnReceive(ITcpServer* pSender,
                                             CONNID dwConnID, int iLength) {
-  Bytes buffer(iLength);
-  buffer.clear();
-  ITcpPullServer* pServer = ITcpPullServer::FromS(pSender);
-  EnFetchResult result = pServer->Fetch(dwConnID, buffer.ptr(), iLength);
-  std::cout << buffer.ptr() << std::endl;
+  // Bytes buffer(iLength);
+  // buffer.clear();
+  // ITcpPullServer* pServer = ITcpPullServer::FromS(pSender);
+  // EnFetchResult result = pServer->Fetch(dwConnID, buffer.ptr(), iLength);
+  // std::cout << buffer.ptr() << std::endl;
   return HR_OK;
 }
 /***********************************************************************************************/

@@ -1,19 +1,18 @@
 #pragma once
 
 #include <iostream>
-
-#include "Bytes.h"
 #include "EpollFdEvent.h"
 #include "EpollLoop.h"
 #include "Fd.h"
 #include "IODevice.h"
 #include "Module.h"
 #include "MacroDef.h"
+#include "ByteBuf.h"
 class SerialDevice : public IODevice {
 
-  using ReadCallBack = std::function<void(Bytes *buffer, size_t bufferLen)>;
+  using ReadCallBack = std::function<void(const char *, int)>;
  public:
- //TUDO
+ //TU DO
   struct SerialDeviceInfo {
     std::string portName;     ///< portName 串口名称
     std::string description;  ///< description 串口描述
@@ -69,7 +68,7 @@ class SerialDevice : public IODevice {
   SerialDevice(EpollLoop *loop, const std::string &name);
   ~SerialDevice() override;
    //初始化
-  bool init(const std::string &portName, BaudRate baudRate = BaudRate9600,
+  bool init(const std::string &portName, BaudRate baudRate =  BaudRate9600,
             Parity parity = ParityNone, DataBits dataBits = DataBits8,
             StopBits stopbits = StopOne, FlowControl flowControl = FlowNone,
             OperateMode mode = AsynchronousOperate,
@@ -90,12 +89,14 @@ class SerialDevice : public IODevice {
   int baudRate2Enum(int baudrate);
   //读取处理Epoll驱动事件
   void onReadCallBack();
+  //Write Event
+  void onWriteCallBack();
   Fd fd_;
   EpollLoop *loop_;
   EpollFdEvent *serialEvent_;
   size_t bufferSize_;
-  Bytes *readBuffer_;
-  Bytes *writeBuffer_;
+  ByteBuf readBuffer_;
+  ByteBuf writeBuffer_;
   SerialDeviceInfo info_;
   ReadCallBack readCallBack_;
   OperateMode mode_;
