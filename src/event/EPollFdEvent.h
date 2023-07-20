@@ -13,39 +13,69 @@ class EpollFdEvent : public FdEvent {
   using ReadEventCallback = std::function<void(int)>;
 
  public:
-  //初始化Fdevent
+  /**
+   * @brief 初始化EpollFd事件
+   * 
+   * @param fd 
+   * @param mode 
+   * @return true 
+   * @return false 
+   */
   bool init(int fd, Mode mode) override;
   void setReadCallback(ReadEventCallback &&cb) {readCallback_ = std::move(cb);}
   void setWriteCallback(EventCallback &&cb) { writeCallback_ = std::move(cb); }
   void setCloseCallback(EventCallback &&cb) { closeCallback_ = std::move(cb); }
   void setErrorCallback(EventCallback &&cb) { errorCallback_ = std::move(cb); }
-  //处理事件
+  /**
+   * @brief 处理事件
+   * 
+   * @param time 
+   */
   void handleEvent(int time);
-  //使能读取
+  /**
+   * @brief 时能读取
+   * 
+   */
   void enableReading() {
     events_ |= kReadEvent;
     update();
   }
-  //使能写入
+    /**
+   * @brief 时能写入
+   * 
+   */
   void enableWriting() {
     events_ |= kWriteEvent;
     update();
   }
-  //关闭读事件
+  /**
+   * @brief 关闭读事件
+   * 
+   */
   void disableReading() {
     events_ &= ~kReadEvent;
     update();
   }
-  //关闭写事件
+    /**
+   * @brief 关闭写事件
+   * 
+   */
   void disableWriting() {
     events_ &= ~kWriteEvent;
     update();
   }
-  //关闭所有事件
+     /**
+   * @brief 关闭所有事件
+   * 
+   */
   void disableAll() {
     events_ = kNoneEvent;
     update();
   }
+  /**
+   * @brief 是否是空事件
+   * 
+   */
   bool isNoneEvent() const { return events_ == kNoneEvent; }
   
   EpollLoop *getLoop() { return this->loop_; }

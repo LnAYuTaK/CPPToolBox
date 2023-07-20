@@ -20,24 +20,65 @@ class EpollLoop : public Loop {
  public:
   explicit EpollLoop();
   ~EpollLoop() override;
-  // 是否与Loop在同一个线程内TUDO
+  /**
+ * @brief 判断是否在loop主线程
+ * 
+ * @return true 
+ * @return false 
+ */
   bool isInLoopThread() override;
-  // Loop是否正在运行
+  /**
+ * @brief 判断loop是否在运行状态
+ * 
+ * @return true 
+ * @return false 
+ */
   bool isRunning() const override;
-  //开始运行EPoll循环
+  
+/**
+ * @brief 运行loop
+ * 
+ * @param mode 
+ */
   void runLoop(Mode mode = Mode::kForever) override;
-  //创建普通的FD读写事件
+  /**
+ * @brief 创建普通Fd事件任务
+ * 
+ * @param eventName 
+ * @return EpollFdEvent* 
+ */
   EpollFdEvent* creatFdEvent(const std::string& eventName) override;
-
-  // EpollFdEvent* creatTimerEvent(const std::string& eventName) override;
-
-  //Exit Loop 
+  /**
+   * @brief waittime 后关闭loop
+   * 
+   * @param wait_time 
+   */
   void exitLoop(const std::chrono::milliseconds& wait_time) override;
-  //Get EpollFD;
+  /**
+   * @brief 获取Epoll的文件描述符
+   * 
+   * @return int 
+   */
   inline int epollFd() const;
-
+  /**
+   * @brief 更新事件任务
+   * 
+   * @param event 
+   */
   void updateEvent(EpollFdEvent* event);
+  /**
+   * @brief 移除事件任务
+   * 
+   * @param event 
+   */
   void removeEvent(EpollFdEvent* event);
+  /**
+   * @brief 判断事件是否在loop里
+   * 
+   * @param event 
+   * @return true 
+   * @return false 
+   */
   bool hasEvent(EpollFdEvent* event);
 
  private:

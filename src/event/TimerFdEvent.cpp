@@ -18,7 +18,19 @@ TimerFdEvent::TimerFdEvent(EpollLoop *loop, const std::string &name)
 
 TimerFdEvent::~TimerFdEvent(){
 }
-
+ 
+/**
+ * @brief   定时器时间初始化
+ * 比如设置 first时间为当前时间  设置repeat为五秒   
+ *  定时器会立刻触发记时五秒后触发事件然后重置重复
+ * 如果设置first为五秒  设置repeat五秒 就会五秒后触发计时
+ * 五秒后重置总共十秒
+ * 如果只设置first 5秒就只会触发一次
+ * @param first 触发时间   
+ * @param repeat  间隔时间
+ * @return true 
+ * @return false 
+ */
 bool TimerFdEvent::init(const std::chrono::nanoseconds first, 
                          const std::chrono::nanoseconds repeat) {
     timerFd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
@@ -41,7 +53,12 @@ bool TimerFdEvent::init(const std::chrono::nanoseconds first,
 void TimerFdEvent::cleanup() {
     CHECK_CLOSE_RESET_FD(timerFd_);
 }
-
+/**
+ * @brief 启动定时器
+ * 
+ * @return true 
+ * @return false 
+ */
 bool TimerFdEvent::start() {
     timerFdEvent_->enableReading();
     if (::timerfd_settime(timerFd_, TFD_TIMER_CANCEL_ON_SET, &timerSpec_, NULL) < 0) {
@@ -49,7 +66,12 @@ bool TimerFdEvent::start() {
     }
     return true;
 }
-
+/**
+ * @brief 停止定时器
+ * 
+ * @return true 
+ * @return false 
+ */
 bool TimerFdEvent::stop() {
     struct itimerspec ts = {0};
     if (::timerfd_settime(timerFd_, TFD_TIMER_CANCEL_ON_SET, &timerSpec_, NULL) < 0) {
@@ -59,6 +81,11 @@ bool TimerFdEvent::stop() {
     return true;
 }
 
+/**
+ * @brief 获取定时器剩余时间
+ * 
+ * @return std::chrono::nanoseconds 
+ */
 std::chrono::nanoseconds TimerFdEvent::remainTime() const {
     std::chrono::nanoseconds remain_time = std::chrono::nanoseconds::zero();
     struct itimerspec ts;
@@ -71,7 +98,10 @@ std::chrono::nanoseconds TimerFdEvent::remainTime() const {
     }
     return remain_time;
 }
-
+/**
+ * @brief 定时器触发事件回调任务
+ * 
+ */
 void TimerFdEvent::onTimerEvent()
 {
     // if (events & FdEvent::kReadEvent) {

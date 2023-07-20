@@ -1,11 +1,11 @@
 /**
- * @file BufferPtr.h
- * @brief 外设设备基类
+ * @file IODevice.h
+ * @author LnAYuTaK (807874484@qq.com)
+ * @brief  外设设备基类
  * @version 0.1
- * @date 2023-06-26
+ * @date 2023-07-02
  * @copyright Copyright (c) 2023
  */
-
 #pragma once
 
 #include <iostream>

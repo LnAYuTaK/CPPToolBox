@@ -26,6 +26,7 @@ EpollLoop::~EpollLoop() {
     ::close(fd);
   }
 }
+
 int EpollLoop::epollFd() const {
   if (poller_ != nullptr) {
     return poller_->epollFd();
@@ -75,7 +76,7 @@ bool EpollLoop::hasEvent(EpollFdEvent* event) {
   return poller_->hasEvent(event);
 }
 
-void EpollLoop::exitLoop(const std::chrono::milliseconds& wait_time) {
+void EpollLoop::exitLoop(const std::chrono::milliseconds& waitTime) {
   keepRunning_ = false;
 }
 

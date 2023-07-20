@@ -1,3 +1,11 @@
+/**
+ * @file SerialDevice.h
+ * @author LnAYuTaK (807874484@qq.com)
+ * @brief  串口外设
+ * @version 0.1
+ * @date 2023-07-20
+ * @copyright Copyright (c) 2023
+ */
 #pragma once
 
 #include <iostream>
@@ -9,11 +17,12 @@
 #include "MacroDef.h"
 #include "ByteBuf.h"
 #include "CLog.h"
+
 class SerialDevice : public IODevice {
 
   using ReadCallBack = std::function<void(const char *, int)>;
  public:
- //TU DO
+
   struct SerialDeviceInfo {
     std::string portName;     ///< portName 串口名称
     std::string description;  ///< description 串口描述
@@ -24,6 +33,7 @@ class SerialDevice : public IODevice {
     AsynchronousOperate,  ///< Asynchronous 异步
     SynchronousOperate    ///< Synchronous 同步
   };
+
   enum BaudRate {
     BaudRate110 = 110,        ///< 110
     BaudRate300 = 300,        ///< 300
@@ -66,6 +76,7 @@ class SerialDevice : public IODevice {
     FlowHardware = 1,  ///< Hardware(RTS / CTS) flow control 硬件流控制
     FlowSoftware = 2   ///< Software(XON / XOFF) flow control 软件流控制
   };
+  
   SerialDevice(EpollLoop *loop, const std::string &name);
   ~SerialDevice() override;
    //初始化

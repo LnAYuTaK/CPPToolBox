@@ -1,3 +1,11 @@
+/**
+ * @file TimerFdEvent.h
+ * @author LnAYuTaK (807874484@qq.com)
+ * @brief  计时器事件
+ * @version 0.1
+ * @date 2023-07-20
+ * @copyright Copyright (c) 2023
+ */
 #pragma once 
 
 #include <string>
@@ -11,7 +19,6 @@
 class TimerFdEvent : public Event {
 
     using Callback = std::function<void ()>;
-
  public:
     explicit TimerFdEvent(EpollLoop *loop, const std::string &name);
     virtual ~TimerFdEvent()override ;
