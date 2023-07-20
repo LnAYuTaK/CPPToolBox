@@ -27,7 +27,10 @@ class EpollLoop : public Loop {
   //开始运行EPoll循环
   void runLoop(Mode mode = Mode::kForever) override;
   //创建普通的FD读写事件
-  EpollFdEvent* creatFdEvent(const std::string& fdName) override;
+  EpollFdEvent* creatFdEvent(const std::string& eventName) override;
+
+  // EpollFdEvent* creatTimerEvent(const std::string& eventName) override;
+
   //Exit Loop 
   void exitLoop(const std::chrono::milliseconds& wait_time) override;
   //Get EpollFD;

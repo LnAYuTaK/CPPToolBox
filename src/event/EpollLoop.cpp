@@ -12,15 +12,13 @@
 #include "EpollFdEvent.h"
 #include "EpollLoop.h"
 #include "EpollPoller.h"
-
+#include "TimerFdEvent.h"
 EpollLoop::EpollLoop()
     : keepRunning_(true),
       eventHandling_(false),
       callingPendingFunctors_(false)
-      // , iteration_(0)
-      ,
-      poller_(std::make_unique<EpollPoller>(this)),
-      currentActiveEvent_(nullptr) {}
+      ,poller_(std::make_unique<EpollPoller>(this))
+      ,currentActiveEvent_(nullptr) {}
 
 EpollLoop::~EpollLoop() {
   int fd = poller_->epollFd();
@@ -81,6 +79,10 @@ void EpollLoop::exitLoop(const std::chrono::milliseconds& wait_time) {
   keepRunning_ = false;
 }
 
-EpollFdEvent* EpollLoop::creatFdEvent(const std::string& fdName) {
-  return new EpollFdEvent(this, fdName);
+EpollFdEvent* EpollLoop::creatFdEvent(const std::string& eventName) {
+  return new EpollFdEvent(this, eventName);
 }
+
+// EpollFdEvent* creatTimerEvent(const std::string& eventName){
+//   return new EpollFdEvent(this, eventName);
+// }

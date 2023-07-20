@@ -30,8 +30,10 @@ class Loop {
   //! 委托延后执行动作
   using Func = std::function<void()>;
 
-  virtual EpollFdEvent *creatFdEvent(const std::string &fd_name = "") = 0;
+  virtual EpollFdEvent *creatFdEvent(const std::string &fdName = "") = 0;
 
+  // virtual EpollFdEvent* creatTimerEvent(const std::string& fdName="")= 0;
+  
   //! 阈值
   struct WaterLine {
     size_t run_in_loop_queue_size;               //!< runInLoop() 队列长度

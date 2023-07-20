@@ -8,6 +8,7 @@
 #include "Module.h"
 #include "MacroDef.h"
 #include "ByteBuf.h"
+#include "CLog.h"
 class SerialDevice : public IODevice {
 
   using ReadCallBack = std::function<void(const char *, int)>;
@@ -79,6 +80,9 @@ class SerialDevice : public IODevice {
   void stop() override;
   void close() override;
   void cleanup() override;
+  //Send
+  void send(const char *data,size_t len);
+  void send(ByteBuf &buf);
   //设置读取回调
   void setReadCallback(ReadCallBack &&cb);
  private:

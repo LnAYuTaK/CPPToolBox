@@ -53,7 +53,7 @@ class EpollFdEvent : public FdEvent {
   int index() { return index_; }
   void setIndex(int idx) { index_ = idx; }
   void setRevents(int revt) { revents_ = revt; }
-  int events() const { return events_; }
+  int  events() const { return events_; }
 
  private:
   static const int kNoneEvent;
