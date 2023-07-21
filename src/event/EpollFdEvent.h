@@ -2,8 +2,10 @@
 
 #include <sys/epoll.h>
 #include "Fd.h"
-#include "FdEvent.h"
-class EpollLoop;
+#include "EpollLoop.h"
+#include "CLog.h"
+
+class FdEvent;
 class EpollFdEvent : public FdEvent {
  public:
   explicit EpollFdEvent(EpollLoop *wp_loop, const std::string &name);

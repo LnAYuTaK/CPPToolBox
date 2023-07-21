@@ -9,10 +9,11 @@
 #include "CLog.h"
 #include "MacroDef.h"
 
-#include "EpollFdEvent.h"
 #include "EpollLoop.h"
-#include "EpollPoller.h"
+#include "EpollFdEvent.h"
 #include "TimerEvent.h"
+#include "EpollPoller.h"
+
 EpollLoop::EpollLoop()
     : keepRunning_(true),
       eventHandling_(false),

@@ -4,30 +4,20 @@
 #include <functional>
 #include <string>
 #include <vector>
-#include "ThreadPool.h"
 
+class EpollLoop;
 class FdEvent;
 class EpollFdEvent;
 class TimerEvent;
-class EpollLoop;
 class Loop {
 
  public:
-  using FdEventList   = std::vector<EpollFdEvent*>;
-  using PollerPtr     = std::unique_ptr<EpollPoller>;
-  using ThreadPoolPtr = std::unique_ptr<ThreadPool>;
-  using Task          = std::function<void()>;
-  using TaskQueue     = SafeQueue<Task>;
-
-
   static EpollLoop *New();
   //! 获取引擎列表
-  enum class Mode {
+  enum  class Mode {
     kOnce,    //!< 仅执行一次
     kForever  //!< 一直执行
   };
-
-
   //! 执行事件循环
   virtual void runLoop(Mode mode = Mode::kForever) = 0;
   //! 退出事件循环
@@ -38,9 +28,6 @@ class Loop {
   virtual bool isInLoopThread() = 0;
   //! Loop是否正在运行
   virtual bool isRunning() const = 0;
-
-  //! 委托延后执行动作
-  using Func = std::function<void()>;
 
   virtual EpollFdEvent *creatFdEvent(const std::string &fdName = "") = 0;
 

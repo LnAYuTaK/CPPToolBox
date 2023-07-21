@@ -17,7 +17,6 @@
 #include <linux/serial.h>
 #include <sys/ioctl.h>
 #include <termios.h>
-#include "ThreadPool.h"
 #include "App.h"
 
 SerialDevice::SerialDevice(EpollLoop *loop, const std::string &name)

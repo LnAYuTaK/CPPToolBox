@@ -1,6 +1,5 @@
 
 #include "App.h"
-#include "ThreadPool.h"
 /***********************************************************/
 //实例化模块
 Application::Application(/* args */) 

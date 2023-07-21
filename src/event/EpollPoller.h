@@ -3,18 +3,25 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
-#include "EpollLoop.h"
 
+#include "EpollLoop.h"
 struct epoll_event;
-class EpollFdEvent;
 class EpollPoller {
+
   using FdEventList = std::vector<EpollFdEvent*>;
   using EventList = std::vector<struct epoll_event>;
   using FdEvenMap = std::unordered_map<int, EpollFdEvent*>;
+  
  public:
   EpollPoller(EpollLoop* loop);
   ~EpollPoller();
-  // Poller启动Epoll池
+  /**
+   * @brief 启动Epoll
+   * 
+   * @param timeoutMs 
+   * @param activeEvents 
+   * @return int 
+   */
   int poll(int timeoutMs, FdEventList* activeEvents);
   //更新事件
   void updateEvent(EpollFdEvent* fdEvent);

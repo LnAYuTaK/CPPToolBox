@@ -4,18 +4,16 @@
 #include <unordered_map>
 #include <vector>
 
-#include "FdEvent.h"
-#include "Loop.h"
 #include "MacroDef.h"
 #include "ThreadPool.h"
+#include "FdEvent.h"
+#include "Loop.h"
 
 class EpollPoller;
 class EpollFdEvent;
-class TimerEvent;
 class EpollLoop : public Loop {
 
  public:
-  
   using FdEventList   = std::vector<EpollFdEvent*>;
   using PollerPtr     = std::unique_ptr<EpollPoller>;
   using ThreadPoolPtr = std::unique_ptr<ThreadPool>;
@@ -23,9 +21,20 @@ class EpollLoop : public Loop {
   using TaskQueue     = SafeQueue<Task>;
   
   explicit EpollLoop();
-  ~EpollLoop() override;
-
+  ~EpollLoop()override;
   /**
+   * @brief 运行loop
+   *
+   * @param mode
+   */
+  void runLoop(Mode mode = Mode::kForever) override;
+    /**
+   * @brief waittime 后关闭loop
+   *
+   * @param wait_time
+   */
+  void exitLoop(const std::chrono::milliseconds& wait_time) override;
+    /**
    * @brief 判断是否在loop主线程
    *
    * @return true
@@ -39,13 +48,6 @@ class EpollLoop : public Loop {
    * @return false
    */
   bool isRunning() const override;
-
-  /**
-   * @brief 运行loop
-   *
-   * @param mode
-   */
-  void runLoop(Mode mode = Mode::kForever) override;
   /**
    * @brief 创建普通Fd事件任务
    *
@@ -54,18 +56,12 @@ class EpollLoop : public Loop {
    */
   EpollFdEvent* creatFdEvent(const std::string& eventName) override;
   /**
-   * @brief 
+   * @brief  创建定时器事件
    * 
    * @param eventName 
    * @return TimerEvent* 
    */
   TimerEvent* creatTimerEvent(const std::string& eventName)override;
-  /**
-   * @brief waittime 后关闭loop
-   *
-   * @param wait_time
-   */
-  void exitLoop(const std::chrono::milliseconds& wait_time) override;
   /**
    * @brief 获取Epoll的文件描述符
    *

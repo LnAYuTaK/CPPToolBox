@@ -4,12 +4,8 @@
 #include <iostream>
 #include <vector>
 
-#include "CLog.h"
-
 #include "EpollFdEvent.h"
-#include "EpollLoop.h"
 #include "FdEvent.h"
-#include "Loop.h"
 
 const int EpollFdEvent::kNoneEvent = 0;
 const int EpollFdEvent::kReadEvent = EPOLLIN | EPOLLPRI;

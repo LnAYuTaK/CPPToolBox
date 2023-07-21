@@ -2,7 +2,6 @@
 
 #include <string>
 
-class Loop;
 class Event {
  public:
   Event(const std::string& name) : name_(name) {}
