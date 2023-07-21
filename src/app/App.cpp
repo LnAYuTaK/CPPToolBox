@@ -16,26 +16,26 @@ void Application::init(/* args */) {
 }
 /***********************************************************/
 void Application::start() {
-  auto uart1 = IODevice::creatSerialDevice(loop_,"UART1");
+  //Serial Port
+  uart1 = IODevice::creatSerialDevice(loop_,"UART1");
   if(uart1->init("/dev/ttyS4"))
   {
-    uart1->setReadCallback([&](const char *data, int dataLen){
+    uart1->setReadCallback([](const char *data, int dataLen){
           ByteBuf buf(data,dataLen);
           std::cout << buf.data() << "  "<< dataLen  <<std::endl;
     });
   }
   uart1->start();
-  ThreadPool::Instance()->submit([&](){
-    while (1)
-    {
-      char buffer[20] = {"123123123123"};
-      uart1->send(buffer,sizeof(buffer));
-      THREAD_SLEEP_MS(200);
-    }
+  //Timer !
+  auto timer =  loop_->creatTimerEvent("Timer1");
+  timer->init(std::chrono::seconds(2),std::chrono::seconds(0));
+  timer->setTimerCallback([](){
+     CLOG_INFO() << "Timer Up";
+     char buffer[20]="123123";
+    //  app()->uart1->send(buffer,sizeof(buffer));
   });
-  // uart1->send(buffer1,sizeof(buffer1));
-  // uart1->send(buffer2,sizeof(buffer2));
-  // uart1->send(buffer3,sizeof(buffer3));
+  timer->start();
+  CLOG_INFO() << "Timer Start";
   // ads1115.init("/dev/i2c-2");
   // ads1115.start();
   // float s= 0 ;

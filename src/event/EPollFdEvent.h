@@ -15,34 +15,36 @@ class EpollFdEvent : public FdEvent {
  public:
   /**
    * @brief 初始化EpollFd事件
-   * 
-   * @param fd 
-   * @param mode 
-   * @return true 
-   * @return false 
+   *
+   * @param fd
+   * @param mode
+   * @return true
+   * @return false
    */
   bool init(int fd, Mode mode) override;
-  void setReadCallback(ReadEventCallback &&cb) {readCallback_ = std::move(cb);}
+  void setReadCallback(ReadEventCallback &&cb) {
+    readCallback_ = std::move(cb);
+  }
   void setWriteCallback(EventCallback &&cb) { writeCallback_ = std::move(cb); }
   void setCloseCallback(EventCallback &&cb) { closeCallback_ = std::move(cb); }
   void setErrorCallback(EventCallback &&cb) { errorCallback_ = std::move(cb); }
   /**
    * @brief 处理事件
-   * 
-   * @param time 
+   *
+   * @param time
    */
   void handleEvent(int time);
   /**
    * @brief 时能读取
-   * 
+   *
    */
   void enableReading() {
     events_ |= kReadEvent;
     update();
   }
-    /**
+  /**
    * @brief 时能写入
-   * 
+   *
    */
   void enableWriting() {
     events_ |= kWriteEvent;
@@ -50,23 +52,23 @@ class EpollFdEvent : public FdEvent {
   }
   /**
    * @brief 关闭读事件
-   * 
+   *
    */
   void disableReading() {
     events_ &= ~kReadEvent;
     update();
   }
-    /**
+  /**
    * @brief 关闭写事件
-   * 
+   *
    */
   void disableWriting() {
     events_ &= ~kWriteEvent;
     update();
   }
-     /**
+  /**
    * @brief 关闭所有事件
-   * 
+   *
    */
   void disableAll() {
     events_ = kNoneEvent;
@@ -74,17 +76,16 @@ class EpollFdEvent : public FdEvent {
   }
   /**
    * @brief 是否是空事件
-   * 
+   *
    */
   bool isNoneEvent() const { return events_ == kNoneEvent; }
-  
+
   EpollLoop *getLoop() { return this->loop_; }
   const int fd() const { return fd_; }
   int index() { return index_; }
   void setIndex(int idx) { index_ = idx; }
   void setRevents(int revt) { revents_ = revt; }
-  int  events() const { return events_; }
-
+  int events() const { return events_; }
  private:
   static const int kNoneEvent;
   static const int kReadEvent;
@@ -107,6 +108,7 @@ class EpollFdEvent : public FdEvent {
   bool isEnabled_;
   //是否正在处理事件
   bool eventHandling_;
+  bool lockEvent_;
   //读回调事件
   ReadEventCallback readCallback_;
   //写回调事件

@@ -96,6 +96,10 @@ class SerialDevice : public IODevice {
   void send(ByteBuf &buf);
   //设置读取回调
   void setReadCallback(ReadCallBack &&cb);
+
+  void debugPrint(){
+     std::cout << "12312312312312"<<std::endl;
+  }
  private:
  //设置串口属性
   bool uartSet(Fd &fd, BaudRate baudRate, Parity parity, DataBits dataBits,

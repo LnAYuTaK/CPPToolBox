@@ -4,18 +4,30 @@
 #include <functional>
 #include <string>
 #include <vector>
+#include "ThreadPool.h"
 
 class FdEvent;
 class EpollFdEvent;
+class TimerEvent;
 class EpollLoop;
 class Loop {
+
  public:
+  using FdEventList   = std::vector<EpollFdEvent*>;
+  using PollerPtr     = std::unique_ptr<EpollPoller>;
+  using ThreadPoolPtr = std::unique_ptr<ThreadPool>;
+  using Task          = std::function<void()>;
+  using TaskQueue     = SafeQueue<Task>;
+
+
   static EpollLoop *New();
   //! 获取引擎列表
   enum class Mode {
     kOnce,    //!< 仅执行一次
     kForever  //!< 一直执行
   };
+
+
   //! 执行事件循环
   virtual void runLoop(Mode mode = Mode::kForever) = 0;
   //! 退出事件循环
@@ -32,8 +44,8 @@ class Loop {
 
   virtual EpollFdEvent *creatFdEvent(const std::string &fdName = "") = 0;
 
-  // virtual EpollFdEvent* creatTimerEvent(const std::string& fdName="")= 0;
-  
+  virtual TimerEvent   *creatTimerEvent(const std::string &fdName = "") = 0;
+
   //! 阈值
   struct WaterLine {
     size_t run_in_loop_queue_size;               //!< runInLoop() 队列长度

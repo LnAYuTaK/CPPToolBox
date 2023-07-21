@@ -16,17 +16,17 @@ const int EpollFdEvent::kReadEvent = EPOLLIN | EPOLLPRI;
 const int EpollFdEvent::kWriteEvent = EPOLLOUT;
 
 EpollFdEvent::EpollFdEvent(EpollLoop *wpLoop, const std::string &name)
-    : FdEvent(name),
-      loop_(wpLoop),
-      addedToLoop_(false),
-      isStopAfterTrigger_(false),
-      revents_(0),
-      index_(-1),
-      events_(0),
-      isEnabled_(false),
-      eventHandling_(false) 
-      {}
-
+    : FdEvent(name)
+    ,loop_(wpLoop)
+    ,addedToLoop_(false)
+    ,isStopAfterTrigger_(false)
+    ,revents_(0)
+    ,index_(-1)
+    ,events_(0)
+    ,isEnabled_(false)
+    ,eventHandling_(false)
+    ,lockEvent_(false)
+    {}
 EpollFdEvent::~EpollFdEvent() { CHECK_CLOSE_RESET_FD(fd_); }
 
 void EpollFdEvent::update() {
@@ -49,13 +49,13 @@ bool EpollFdEvent::init(int fd, Mode mode) {
 }
 
 void EpollFdEvent::handleEvent(int time) {
-  // Lock //
-  handleLockEvent(time);
+  if(lockEvent_==false){
+    handleLockEvent(time);
+  }
 }
-
 void EpollFdEvent::handleLockEvent(int receiveTime) {
   //记录事件
-  eventHandling_ = true;
+  // eventHandling_ = true;
   if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN)) {
     if (closeCallback_) closeCallback_();
   }
@@ -72,6 +72,10 @@ void EpollFdEvent::handleLockEvent(int receiveTime) {
   if (revents_ & EPOLLOUT) {
     if (writeCallback_) writeCallback_();
   }
-  eventHandling_ = false;
+  // eventHandling_ = false;
+  if(isStopAfterTrigger_){
+    lockEvent_ = true;
+    this->disableAll();
+  }
   //记录时间//
 }

@@ -8,7 +8,6 @@
 struct epoll_event;
 class EpollFdEvent;
 class EpollPoller {
-  
   using FdEventList = std::vector<EpollFdEvent*>;
   using EventList = std::vector<struct epoll_event>;
   using FdEvenMap = std::unordered_map<int, EpollFdEvent*>;

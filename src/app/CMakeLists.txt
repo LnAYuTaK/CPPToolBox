@@ -9,5 +9,5 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../base
 aux_source_directory(${CMAKE_CURRENT_SOURCE_DIR} SRC_LIST)
 add_executable(${PROJECT_NAME} ${SRC_LIST})
 # 添加链接库，动态和静态都行
-target_link_libraries(${PROJECT_NAME}  gwevent gwdevice gwdb  gwnet gwbase)
+target_link_libraries(${PROJECT_NAME}  gwbase gwevent gwdevice gwdb  gwnet )
 target_link_libraries(${PROJECT_NAME}  -lpthread -lrt -ldl -lm)

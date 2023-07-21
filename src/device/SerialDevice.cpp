@@ -9,6 +9,7 @@
 #include <string.h>
 #include <unistd.h>
 #include <string>
+#include <mutex>
 #include "CLog.h"
 #include "MacroDef.h"
 
@@ -17,6 +18,7 @@
 #include <sys/ioctl.h>
 #include <termios.h>
 #include "ThreadPool.h"
+#include "App.h"
 
 SerialDevice::SerialDevice(EpollLoop *loop, const std::string &name)
     : loop_(loop),
@@ -96,9 +98,9 @@ void SerialDevice::setReadCallback(ReadCallBack &&cb) {
 
   readCallBack_ = std::move(cb);
     if (serialEvent_) {
-          serialEvent_->setReadCallback([&](int time) {
+        serialEvent_->setReadCallback([this](int time) {
         { 
-          this->onReadCallBack(); 
+          this->onReadCallBack();
         }
       });
     }
@@ -252,20 +254,16 @@ void SerialDevice::onReadCallBack()
   else {
      CLOG_ERROR() << name_<<": Read Buffer Error";
   }
-  CLOG_INFO()<< readBuffer_.readableBytes();
   readBuffer_.clear();
 }
 
 void SerialDevice::onWriteCallBack(){
- 
-  CLOG_DEBUG() << "Write CALL BACK";
+
   if(writeBuffer_.readableBytes() == 0) {
     serialEvent_->disableWriting();
     return;
   }
   else {
-    CLOG_INFO() << writeBuffer_.readBytes(writeBuffer_.readableBytes()).data();
-    CLOG_INFO() << writeBuffer_.readableBytes();
     ssize_t wsize = fd_.write(writeBuffer_.readBytes(writeBuffer_.readableBytes()).data(), \
                                       sizeof(writeBuffer_.readableBytes()));
     if(wsize<0){
@@ -275,6 +273,7 @@ void SerialDevice::onWriteCallBack(){
 }
 
 void SerialDevice::send(const char *data,size_t len) {
+
   if(state()!=State::kRunning){
     CLOG_WARN() << name_ << ": Need Running First";
     return;

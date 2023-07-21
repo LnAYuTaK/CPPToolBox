@@ -23,6 +23,7 @@
 #include "ThreadPool.h"
 // app
 #include "EpollFdEvent.h"
+#include "TimerEvent.h"
 #include "FdEvent.h"
 #include "Loop.h"
 #include "Database.h"
@@ -30,9 +31,8 @@
 #include "TCPServer.h"
 #include "ADCDevice.h"
 #include "SerialDevice.h"
-//TEST
-#include "CSerialPort/SerialPort.h"
 
+//TEST
 
 #define FD_EVENT_TEST
 #define DB_FILE "test.db"
@@ -56,9 +56,10 @@ class Application {
   }
   // Main Loop
   EpollLoop* loop() { return this->loop_; }
+  SerialDevice* uart1;
  private:
   EpollLoop* loop_ = nullptr;
-  
+
 
 };
 

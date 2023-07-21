@@ -17,12 +17,10 @@
 #include <utility>
 #include <vector>
 #include "SafeQueue.h"
-
-static const int ThreadDealutNum = 5;
+#include "MacroDef.h"
 
 class ThreadPool {
   DISALLOW_COPY_AND_ASSIGN(ThreadPool);
-
  private:
   class ThreadWorker {
    private:
@@ -56,15 +54,11 @@ class ThreadPool {
   std::condition_variable m_conditional_lock;
 
  public:
-  static ThreadPool *Instance(bool create_if_needed = true) {
-    static ThreadPool *instance = nullptr;
-    if (!instance && create_if_needed) {
-      static std::once_flag flag;
-      std::call_once(flag, [&] {
-        instance = new (std::nothrow) ThreadPool(ThreadDealutNum);
-      });
+  ThreadPool(const int n_threads)
+      : m_threads(std::vector<std::thread>(n_threads)), m_shutdown(false) {
+    for (size_t i = 0; i < m_threads.size(); ++i) {
+      m_threads[i] = std::thread(ThreadWorker(this, i));
     }
-    return instance;
   }
 
   //结束关闭所有线程
@@ -94,11 +88,4 @@ class ThreadPool {
     return task_ptr->get_future();
   }
 
- private:
-  ThreadPool(const int n_threads)
-      : m_threads(std::vector<std::thread>(n_threads)), m_shutdown(false) {
-    for (size_t i = 0; i < m_threads.size(); ++i) {
-      m_threads[i] = std::thread(ThreadWorker(this, i));
-    }
-  }
 };
