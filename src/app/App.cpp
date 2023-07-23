@@ -15,26 +15,37 @@ void Application::init(/* args */) {
 }
 /***********************************************************/
 void Application::start() {
+
   //Serial Port
-  uart1 = IODevice::creatSerialDevice(loop_,"UART1");
-  if(uart1->init("/dev/ttyS4"))
-  {
-    uart1->setReadCallback([](const char *data, int dataLen){
-          ByteBuf buf(data,dataLen);
-          std::cout << buf.data() << "  "<< dataLen  <<std::endl;
-    });
-  }
-  uart1->start();
+  // uart1 = IODevice::creatSerialDevice(loop_,"UART1");
+  // if(uart1->init("/dev/ttyS4"))
+  // {
+  //   uart1->setReadCallback([](const char *data, int dataLen){
+  //         ByteBuf buf(data,dataLen);
+  //         std::cout << buf.data() << "  "<< dataLen  <<std::endl;
+  //   });
+  // }
+  // uart1->start();
   //Timer !
   auto timer =  loop_->creatTimerEvent("Timer1");
-  timer->init(std::chrono::seconds(2),std::chrono::seconds(0));
+  timer->init(std::chrono::seconds().zero(), std::chrono::seconds(2));
   timer->setTimerCallback([](){
      CLOG_INFO() << "Timer Up";
-     char buffer[20]="123123";
     //  app()->uart1->send(buffer,sizeof(buffer));
   });
   timer->start();
-  CLOG_INFO() << "Timer Start";
+
+  loop_->runTask([](){
+    CLOG_INFO() << "Task INFO1";
+  },false);
+
+    loop_->runTask([](){
+    CLOG_INFO() << "Task INFO2";
+  },false);
+
+    loop_->runTask([](){
+    CLOG_INFO() << "Task INFO3";
+  },false);
   // ads1115.init("/dev/i2c-2");
   // ads1115.start();
   // float s= 0 ;

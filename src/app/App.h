@@ -56,7 +56,7 @@ class Application {
   }
   // Main Loop
   EpollLoop* loop() { return this->loop_; }
-  SerialDevice* uart1;
+  // SerialDevice* uart1;
  private:
   EpollLoop* loop_ = nullptr;
 

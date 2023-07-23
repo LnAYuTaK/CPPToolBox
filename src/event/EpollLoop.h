@@ -14,12 +14,12 @@ class EpollFdEvent;
 class EpollLoop : public Loop {
 
  public:
-  using FdEventList   = std::vector<EpollFdEvent*>;
-  using PollerPtr     = std::unique_ptr<EpollPoller>;
+  using FdEventList       = std::vector<EpollFdEvent*>;
+  using PollerPtr             = std::unique_ptr<EpollPoller>;
   using ThreadPoolPtr = std::unique_ptr<ThreadPool>;
-  using Task          = std::function<void()>;
-  using TaskQueue     = SafeQueue<Task>;
-  
+  using Task                      = std::function<void()>;
+  using TaskQueue         = std::deque<Task>;
+  using TaskQueuePtr  = std::unique_ptr<TaskQueue>;
   explicit EpollLoop();
   ~EpollLoop()override;
   /**
@@ -48,6 +48,18 @@ class EpollLoop : public Loop {
    * @return false
    */
   bool isRunning() const override;
+ /**
+  * @brief  创建任务
+  * 
+  * @param fun 
+  * @param runInThreadPool 
+  */
+  void runTask(Task &&fun,bool runInThreadPool) ;
+  /**
+   * @brief 处理任务队列任务
+   *  
+   */
+  void handleTaskFun();
   /**
    * @brief 创建普通Fd事件任务
    *
@@ -88,15 +100,16 @@ class EpollLoop : public Loop {
    * @return false
    */
   bool hasEvent(EpollFdEvent* event);
-
+  
  private:
   bool keepRunning_;
   bool eventHandling_;         
   bool callingPendingFunctors_; 
 
   PollerPtr poller_;
-  TaskQueue taskQueue_;
   FdEventList activeEvents_;
   EpollFdEvent* currentActiveEvent_;
-
+  TaskQueuePtr  taskQueue_;
+  ThreadPoolPtr  threadPool_;
+  std::recursive_mutex lock_;
 };

@@ -3,6 +3,7 @@
 #include <sys/time.h>
 #include <sys/timerfd.h>
 #include <unistd.h>
+#include <fcntl.h>
 
 #include <chrono>
 #include "CLog.h"
@@ -34,6 +35,7 @@ bool TimerEvent::init(const std::chrono::nanoseconds first,
 
   auto mode = repeat_nanosec != 0 ? Event::Mode::kPersist : Event::Mode::kOneshot;
   TimerEvent_->init(timerFd_, mode);
+
   TimerEvent_->setReadCallback(std::bind(&TimerEvent::onTimerEvent, this));
   return true;
 }

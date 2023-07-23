@@ -64,8 +64,7 @@ class FileHelper {
   static bool getType(const std::string &filename, FileType *type);
   //创建文件夹
   static bool createDir(const std::string &dir);
-
  private:
-  FileHelper() { ; }
-  ~FileHelper() { ; }
+  FileHelper() =delete;
+  ~FileHelper() =delete;
 };

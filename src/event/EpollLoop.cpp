@@ -13,14 +13,17 @@
 #include "EpollFdEvent.h"
 #include "TimerEvent.h"
 #include "EpollPoller.h"
-
+#include "SystemInfo.h"
+#define MAX_THREAD_NUM   7
 EpollLoop::EpollLoop()
-    : keepRunning_(true),
-      eventHandling_(false),
-      callingPendingFunctors_(false),
-      poller_(std::make_unique<EpollPoller>(this)),
-      currentActiveEvent_(nullptr) {}
-
+    : keepRunning_(true)
+    ,eventHandling_(false)
+    ,callingPendingFunctors_(false)
+    ,poller_(std::make_unique<EpollPoller>(this))
+    ,currentActiveEvent_(nullptr) 
+    ,taskQueue_(std::make_unique<TaskQueue>())
+    ,threadPool_(std::make_unique<ThreadPool>(MAX_THREAD_NUM))
+      {}
 EpollLoop::~EpollLoop() {
   int fd = poller_->epollFd();
   if (fd < 0) {
@@ -41,6 +44,24 @@ bool EpollLoop::isInLoopThread() { return false; }
 
 bool EpollLoop::isRunning() const { return false; }
 
+void  EpollLoop::runTask (Task &&fun,bool runInThreadPool) {
+  if(!runInThreadPool) {
+      this->taskQueue_->emplace_back(std::move(fun));
+  }
+  else{
+      this->threadPool_->submit(std::move(fun));
+  }
+}
+
+void EpollLoop::handleTaskFun(){
+ std::lock_guard<std::recursive_mutex> g(lock_);
+  if(taskQueue_->size()>0){
+      Task &fun  = taskQueue_->front();  // 获取第一个元素
+       taskQueue_->pop_front();  // 移除第一个元素
+       fun();
+  }
+}
+
 void EpollLoop::runLoop(Mode mode) {
   if (epollFd() < 0) return;
   keepRunning_ = (mode == Loop::Mode::kForever);
@@ -48,6 +69,7 @@ void EpollLoop::runLoop(Mode mode) {
     activeEvents_.clear();
     // handleNextFunc();  //处理LOOP池子事件
     poller_->poll(10000, &activeEvents_);
+   handleTaskFun();
     eventHandling_ = true;
     for (EpollFdEvent* fdEvent : activeEvents_) {
       currentActiveEvent_ = fdEvent;

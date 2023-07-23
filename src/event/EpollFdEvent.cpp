@@ -50,8 +50,6 @@ void EpollFdEvent::handleEvent(int time) {
   }
 }
 void EpollFdEvent::handleLockEvent(int receiveTime) {
-  //记录事件
-  // eventHandling_ = true;
   if ((revents_ & EPOLLHUP) && !(revents_ & EPOLLIN)) {
     if (closeCallback_) closeCallback_();
   }
@@ -68,7 +66,6 @@ void EpollFdEvent::handleLockEvent(int receiveTime) {
   if (revents_ & EPOLLOUT) {
     if (writeCallback_) writeCallback_();
   }
-  // eventHandling_ = false;
   if(isStopAfterTrigger_){
     lockEvent_ = true;
     this->disableAll();

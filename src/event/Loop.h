@@ -10,7 +10,7 @@ class FdEvent;
 class EpollFdEvent;
 class TimerEvent;
 class Loop {
-
+    using Task          = std::function<void()>;
  public:
   static EpollLoop *New();
   //! 获取引擎列表
@@ -18,21 +18,48 @@ class Loop {
     kOnce,    //!< 仅执行一次
     kForever  //!< 一直执行
   };
+
   //! 执行事件循环
   virtual void runLoop(Mode mode = Mode::kForever) = 0;
   //! 退出事件循环
   virtual void exitLoop(const std::chrono::milliseconds &wait_time =
                             std::chrono::milliseconds::zero()) = 0;
 
-  //! 是否与Loop在同一个线程内
+  /**
+   * @brief 判断是否跟Loop是同一个线程
+   *  
+   * @return true 
+   * @return false 
+   */
   virtual bool isInLoopThread() = 0;
-  //! Loop是否正在运行
+  /**
+   * @brief 判断Loop是否运行
+   * 
+   * @return true 
+   * @return false 
+   */
   virtual bool isRunning() const = 0;
-
+  /**
+   * @brief 创建一个在loop里边同步运行的
+   * 
+   * @param fun 
+   */
+  virtual  void runTask(Task &&fun,bool runInThreadPool) = 0;
+  /**
+   * @brief 创建普通的文件FD 事件 是很多组件的基础 
+   * 
+   * @param fdName 
+   * @return EpollFdEvent* 
+   */
   virtual EpollFdEvent *creatFdEvent(const std::string &fdName = "") = 0;
-
+  /**
+   * @brief 创建定时器事件
+   * 
+   * @param fdName 
+   * @return TimerEvent* 
+   */
   virtual TimerEvent   *creatTimerEvent(const std::string &fdName = "") = 0;
-
+ 
   //! 阈值
   struct WaterLine {
     size_t run_in_loop_queue_size;               //!< runInLoop() 队列长度
