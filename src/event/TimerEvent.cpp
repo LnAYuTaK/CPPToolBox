@@ -10,6 +10,8 @@
 
 namespace {
 constexpr auto NANOSECS_PER_SECOND = 1000000000ul;
+constexpr int MILLS_IN_SECOND = 1000;
+constexpr int NANOS_IN_MILL = 1000 * 1000;
 }
 
 TimerEvent::TimerEvent(EpollLoop *loop, const std::string &name)
@@ -19,6 +21,25 @@ TimerEvent::TimerEvent(EpollLoop *loop, const std::string &name)
 
 TimerEvent::~TimerEvent() {}
 
+uint64_t TimerEvent::nowSinceEpoch() {
+  auto now = std::chrono::high_resolution_clock::now();
+  auto duration = now.time_since_epoch();
+  return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+}
+
+uint64_t TimerEvent::fromNow(uint64_t timestamp) {
+  auto now = nowSinceEpoch();
+  return (timestamp >= now) ? (timestamp - now) : 0;
+}
+
+struct timespec  TimerEvent::fromNowInTimeSpec(uint64_t timestamp) {
+  auto from_now_mills = fromNow(timestamp);
+  struct timespec ts;
+  ts.tv_sec = static_cast<time_t>(from_now_mills / MILLS_IN_SECOND);
+  ts.tv_nsec = static_cast<int64_t>((from_now_mills % MILLS_IN_SECOND) * NANOS_IN_MILL);
+  return ts;
+}
+
 bool TimerEvent::init(const std::chrono::nanoseconds first,
                         const std::chrono::nanoseconds repeat) {
   timerFd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
@@ -26,7 +47,6 @@ bool TimerEvent::init(const std::chrono::nanoseconds first,
     return false;
   }
   auto first_nanosec = first.count();
-  CLOG_INFO() <<first_nanosec;
   auto repeat_nanosec = repeat.count();
 
   timerSpec_.it_value.tv_sec = first_nanosec / NANOSECS_PER_SECOND;

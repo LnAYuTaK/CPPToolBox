@@ -1,12 +1,12 @@
 /**
  * @file Utils.h
- * @author LnAYuTaK (807874484@qq.com)
+ * @author 刘宽 (807874484@qq.com)
  * @brief 工具类
  * @version 0.1
  * @date 2023-07-02
- *
- * @copyright Copyright (c) 2023
- *
+ *  
+ * @copyright Copyright (c) 2023 国网中电研发部
+ * 
  */
 #pragma once
 

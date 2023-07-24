@@ -1,3 +1,23 @@
+/**
+ * @file ByteBuf.h
+ * @author 刘宽 (807874484@qq.com)
+ * @brief  数据缓冲区
+ * @version 0.1
+ * @date 2023-06-28
+ * /**
+ * ByteBuf封装，内置readerIndex和writerIndex基数，用于记录当前读取和写入的位置
+ *
+ * +-------------------+------------------+------------------+
+ * | discardable bytes |  readable bytes  |  writable bytes  |
+ * |                   |     (CONTENT)    |                  |
+ * +-------------------+------------------+------------------+
+ * |                   |                  |                  |
+ * 0      <=      readerIndex   <=   writerIndex    <=    capacity
+ *
+ * @author: sherlock_lht
+ * @copyright Copyright (c) 2023 国网中电研发部
+ * 
+ */
 #pragma once 
 
 #include <string>
@@ -10,18 +30,7 @@ enum Case
     Lower = 0,  //小写
     Upper,      //大写
 };
-/**
- * ByteBuf封装，内置readerIndex和writerIndex基数，用于记录当前读取和写入的位置
- *
- * +-------------------+------------------+------------------+
- * | discardable bytes |  readable bytes  |  writable bytes  |
- * |                   |     (CONTENT)    |                  |
- * +-------------------+------------------+------------------+
- * |                   |                  |                  |
- * 0      <=      readerIndex   <=   writerIndex    <=    capacity
- *
- * @author: sherlock_lht
- */
+
 class ByteBufData
 {
 public:

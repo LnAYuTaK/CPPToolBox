@@ -1,3 +1,13 @@
+/**
+ * @file RingBuffer.h
+ * @author 刘宽 (807874484@qq.com)
+ * @brief 多线程消费生产者环形缓冲区
+ * @version 0.1
+ * @date 2023-07-24
+ * 
+ * @copyright Copyright (c) 2023 国网中电研发部
+ * 
+ */
 #pragma once 
 
 #include <stdint.h>

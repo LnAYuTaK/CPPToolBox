@@ -1,12 +1,12 @@
 /**
  * @file SafeQueue.h
- * @author LnAYuTaK (807874484@qq.com)
- * @brief  线程安全的队列(通过封装STL Queue实现)
+ * @author 刘宽 (807874484@qq.com)
+ * @brief  线程安全队列
  * @version 0.1
- * @date 2023-06-05
- *
- * @copyright Copyright (c) 2023
- *
+ * @date 2023-06.5
+ * 
+ * @copyright Copyright (c) 2023 国网中电研发部
+ * 
  */
 #pragma once
 

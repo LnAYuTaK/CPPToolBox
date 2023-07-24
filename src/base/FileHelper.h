@@ -1,10 +1,15 @@
 /**
  * @file FileHelper.h
- * @author LnAYuTaK (807874484@qq.com)
+ * @author 刘宽 (807874484@qq.com)
  * @brief  文件操作工具类
+ * 注意是静态类 需要静态调用 
+ * example：
+ *   FileHelper::pathExists("/path/to/file");
  * @version 0.1
  * @date 2023-06-25
- * @copyright Copyright (c) 2023
+ * 
+ * @copyright Copyright (c) 2023 国网中电研发部
+ * 
  */
 #pragma once
 #include <dirent.h>

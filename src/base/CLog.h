@@ -1,12 +1,12 @@
 /**
- * @file CLOG.h
- * @author LnAYuTaK (807874484@qq.com)
- * @brief 日志模块(默认写入文件 并输入到控制台)
+ * @file CLog.h
+ * @author 刘宽 (807874484@qq.com)
+ * @brief  日志模块
  * @version 0.1
- * @date 2023-03-03
- *
- * @copyright Copyright (c) 2023
- *
+ * @date 2023-06-13
+ * 多线程安全，加锁，通过匿名对象实现日志流输出
+ * @copyright Copyright (c) 2023 国网中电研发部
+ * 
  */
 #pragma once
 #include <cstdio>

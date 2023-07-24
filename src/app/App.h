@@ -1,10 +1,12 @@
 /**
  * @file App.h
- * @author LnAYuTaK (807874484@qq.com)
- * @brief  应用程序Application (全局单例)
+ * @author 刘宽 (807874484@qq.com)
+ * @brief 应用程序APP(单例)
  * @version 0.1
  * @date 2023-06-26
- * @copyright Copyright (c) 2023
+ * 
+ * @copyright Copyright (c) 2023 国网中电研发部
+ * 
  */
 #pragma once
 // std
@@ -32,28 +34,17 @@
 #include "ADCDevice.h"
 #include "SerialDevice.h"
 
-//TEST
-
-#define FD_EVENT_TEST
-#define DB_FILE "test.db"
-// #define MQTT_TEST
-// #define NETWORK_TEST
-//#define  DATABASE_TEST
 class Application {
   //单例
   DECLARE_SINGLETON(Application)
  public:
   ~Application();
   //资源初始化
-  void init();
+  virtual void init();
   //开启系统任务
-  void start();
+  virtual void start();
   // Event Loop;
-  void exec() {
-    if (loop_) {
-      loop_->runLoop();
-    }
-  }
+  void exec();
   // Main Loop
   EpollLoop* loop() { return this->loop_; }
   // SerialDevice* uart1;
