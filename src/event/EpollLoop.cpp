@@ -14,9 +14,9 @@
 #include "TimerEvent.h"
 #include "EpollPoller.h"
 #include "SystemInfo.h"
-#define MAX_THREAD_NUM   7
+#define MAX_THREAD_NUM   5
 EpollLoop::EpollLoop()
-    : keepRunning_(true)
+    :keepRunning_(true)
     ,eventHandling_(false)
     ,callingPendingFunctors_(false)
     ,poller_(std::make_unique<EpollPoller>(this))
@@ -42,7 +42,7 @@ int EpollLoop::epollFd() const {
 
 bool EpollLoop::isInLoopThread() { return false; }
 
-bool EpollLoop::isRunning() const { return false; }
+bool EpollLoop::isRunning() const { return keepRunning_; }
 
 void  EpollLoop::runTask (Task &&fun,bool runInThreadPool) {
   if(!runInThreadPool) {
@@ -65,18 +65,20 @@ void EpollLoop::handleTaskFun(){
 void EpollLoop::runLoop(Mode mode) {
   if (epollFd() < 0) return;
   keepRunning_ = (mode == Loop::Mode::kForever);
+  threadPool_->start();
   do {
     activeEvents_.clear();
-    // handleNextFunc();  //处理LOOP池子事件
-    poller_->poll(10000, &activeEvents_);
-   handleTaskFun();
-    eventHandling_ = true;
+    poller_->poll(0, &activeEvents_);
+    //Handle Task
+    handleTaskFun();
+    // eventHandling_ = true;
     for (EpollFdEvent* fdEvent : activeEvents_) {
       currentActiveEvent_ = fdEvent;
       currentActiveEvent_->handleEvent(50);
     }
-    eventHandling_ = false;
+    // eventHandling_ = false;
   } while (keepRunning_);
+  keepRunning_ = false;
 }
 
 void EpollLoop::updateEvent(EpollFdEvent* event) {

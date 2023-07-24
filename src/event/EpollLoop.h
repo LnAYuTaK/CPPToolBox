@@ -15,11 +15,12 @@ class EpollLoop : public Loop {
 
  public:
   using FdEventList       = std::vector<EpollFdEvent*>;
-  using PollerPtr             = std::unique_ptr<EpollPoller>;
-  using ThreadPoolPtr = std::unique_ptr<ThreadPool>;
-  using Task                      = std::function<void()>;
+  using PollerPtr         = std::unique_ptr<EpollPoller>;
+  using ThreadPoolPtr     = std::unique_ptr<ThreadPool>;
+  using Task              = std::function<void()>;
   using TaskQueue         = std::deque<Task>;
-  using TaskQueuePtr  = std::unique_ptr<TaskQueue>;
+  using TaskQueuePtr      = std::unique_ptr<TaskQueue>;
+
   explicit EpollLoop();
   ~EpollLoop()override;
   /**
@@ -102,14 +103,15 @@ class EpollLoop : public Loop {
   bool hasEvent(EpollFdEvent* event);
   
  private:
+ 
   bool keepRunning_;
   bool eventHandling_;         
   bool callingPendingFunctors_; 
 
-  PollerPtr poller_;
-  FdEventList activeEvents_;
-  EpollFdEvent* currentActiveEvent_;
-  TaskQueuePtr  taskQueue_;
-  ThreadPoolPtr  threadPool_;
+  PollerPtr        poller_;
+  FdEventList      activeEvents_;
+  EpollFdEvent*    currentActiveEvent_;
+  TaskQueuePtr     taskQueue_;
+  ThreadPoolPtr    threadPool_;
   std::recursive_mutex lock_;
 };

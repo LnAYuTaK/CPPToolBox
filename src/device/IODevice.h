@@ -43,6 +43,8 @@ class IODevice {
   void setState(State state){ state_  = state;}
   static SerialDevice* creatSerialDevice(EpollLoop* loop,
                                          const std::string& name);
+
+                                  
 private:
   State state_ = kNone;        
 };

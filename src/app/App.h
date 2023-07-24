@@ -59,8 +59,6 @@ class Application {
   // SerialDevice* uart1;
  private:
   EpollLoop* loop_ = nullptr;
-
-
 };
 
 //全局单例接口

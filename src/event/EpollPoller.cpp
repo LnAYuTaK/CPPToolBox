@@ -33,11 +33,9 @@ EpollPoller::EpollPoller(EpollLoop* loop)
 EpollPoller::~EpollPoller() { CHECK_CLOSE_RESET_FD(epollFd_); }
 
 int EpollPoller::poll(int timeoutMs, FdEventList* activeEvents) {
-  CLOG_INFO() << "WAIT START";
   int numEvents = ::epoll_wait(epollFd_, &*events_.begin(),
                                static_cast<int>(events_.size()), timeoutMs);
   int savedErrno = errno;
-  CLOG_INFO() << "WAIT LAST";
   if (numEvents > 0) {
     fillActiveEvents(numEvents, activeEvents);
     if (static_cast<size_t>(numEvents) == events_.size()) {

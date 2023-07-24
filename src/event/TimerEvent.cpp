@@ -26,6 +26,7 @@ bool TimerEvent::init(const std::chrono::nanoseconds first,
     return false;
   }
   auto first_nanosec = first.count();
+  CLOG_INFO() <<first_nanosec;
   auto repeat_nanosec = repeat.count();
 
   timerSpec_.it_value.tv_sec = first_nanosec / NANOSECS_PER_SECOND;

@@ -24,7 +24,6 @@ class Loop {
   //! 退出事件循环
   virtual void exitLoop(const std::chrono::milliseconds &wait_time =
                             std::chrono::milliseconds::zero()) = 0;
-
   /**
    * @brief 判断是否跟Loop是同一个线程
    *  

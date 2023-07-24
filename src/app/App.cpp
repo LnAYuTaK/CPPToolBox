@@ -2,8 +2,8 @@
 #include "App.h"
 /***********************************************************/
 //实例化模块
-Application::Application(/* args */) 
-                          :loop_(Loop::New()) {
+Application::Application() 
+                          :loop_(Loop::New()){
 
 }
 /***********************************************************/
@@ -11,11 +11,11 @@ Application* app(void) { return Application::Instance(); }
 /***********************************************************/
 Application::~Application() {}
 /***********************************************************/
-void Application::init(/* args */) {
+void Application::init() {
 }
 /***********************************************************/
 void Application::start() {
-
+  //
   //Serial Port
   // uart1 = IODevice::creatSerialDevice(loop_,"UART1");
   // if(uart1->init("/dev/ttyS4"))
@@ -27,21 +27,21 @@ void Application::start() {
   // }
   // uart1->start();
   //Timer !
-  auto timer =  loop_->creatTimerEvent("Timer1");
-  timer->init(std::chrono::seconds().zero(), std::chrono::seconds(2));
-  timer->setTimerCallback([](){
-     CLOG_INFO() << "Timer Up";
-    //  app()->uart1->send(buffer,sizeof(buffer));
-  });
-  timer->start();
-
+  // auto timer =  loop_->creatTimerEvent("Timer1");
+  // timer->init(std::chrono::seconds(2), std::chrono::seconds(2));
+  // timer->setTimerCallback([](){
+  //    CLOG_INFO() << "Timer Up";
+  //   //  app()->uart1->send(buffer,sizeof(buffer));
+  // });
+  // timer->start();
+  
   loop_->runTask([](){
     CLOG_INFO() << "Task INFO1";
-  },false);
+  },true);
 
     loop_->runTask([](){
     CLOG_INFO() << "Task INFO2";
-  },false);
+  },true);
 
     loop_->runTask([](){
     CLOG_INFO() << "Task INFO3";
