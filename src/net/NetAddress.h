@@ -6,6 +6,7 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+#include <sys/socket.h>
 class NetAddress {
  public:
   enum class Protocol { Ipv4, Ipv6 };

@@ -30,7 +30,7 @@ socklen_t * NetAddress::addrLen()  {
 }
 
  std::string NetAddress::ip() const  {
-  char ip_address[INET6_ADDRSTRLEN];  // long enough for both Ipv4 and Ipv6
+  char ip_address[INET6_ADDRSTRLEN];  
   if (protocol_ == NetAddress::Protocol::Ipv4) {
     auto addr_ipv4 = reinterpret_cast<struct sockaddr_in *>(&addr_);
     inet_ntop(AF_INET, &addr_ipv4->sin_addr, ip_address, INET_ADDRSTRLEN);
