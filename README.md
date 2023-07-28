@@ -44,37 +44,30 @@ $ make
 ### 用例展示
 
 #### 日志模块
-创建日志流匿名类的方式实例化日志流对象，在其析构时输出到控制台 并将日志内容输入到文件,日志模块格式如下
-```C++
-CLOG_INFO() << "INFO LOG"
-
-[1970.01.01-09:49:56][ INFO ][function][line] INFO LOG
-
-CLOG_INFO_FMT("%s","INFO LOG FMT");
-
-[1970.01.01-09:49:56][ INFO ][function][line] INFO LOG FMT
-```
 宏定义有四个级别的日志记录:
 + `CLOG_DEBUG`
 + `CLOG_INFO`
 + `CLOG_WARN`
 + `CLOG_ERROR`
+
 本模块提供两种风格的API日志输出方式
+创建日志流匿名类的方式实例化日志流对象，在其析构时输出到控制台 并将日志内容输入到文件,日志模块格式如下
 ```CPP
-Example: 
-CLOG_INFO_FMT("%s","This is INFO Log")
-```
-```CPP
-Example:
-CLOG_INFO() << "This is INFO Log" 
+
+CLOG_INFO() << "This is C++ Style INFO Log";
+CLOG_INFO_FMT("%s","This is C Style INFO Log");
+
+//Terminal
+[1970.01.01-09:49:56][ INFO ][function][line] This is C++ Style INFO Log
+[1970.01.01-09:49:56][ INFO ][function][line] This is C Style INFO Log
+
 ```
 #### Eventloop(事件循环池)
 底层使用IO多路复用epoll 传统**Reactor模型多线程响应式架构**
 内部通过事件回调 执行相关任务配合ThreadPool可以进行大量计算和阻塞操作
 ```CPP
-
-EpollLoop loop = Loop::New()
 //向标准输入流 注册一个FD读事件
+EpollLoop loop = Loop::New()
 auto fds = loop->creatFdEvent("STDIO");
 //初始化
 fds->initialize(STDIN_FILENO,1,Event::Mode::kPersist);
@@ -89,30 +82,26 @@ fds->setReadCallback([&](int fd){
 fds->enableReading();
 //开启事件循环等待相应
 loop.runloop();
-
 ```
-#### 网络模块
-实现基础的网络模块 TCP客户端 TCP服务器 MQTT 客户端
-实现依赖底层第三方库 **MQTT** **HP-Socket** 
+#### Device(外设模块)
 ```CPP
-实例化一个MQTT客户端
-#define MQTT_URL "192.168.16.231:1883"
-#define MQTT_NAME "client"
-#define MQTT_USERNAME    "admin"
-#define MQTT_PASSWD      "public"
-auto mqttc = make_shared<MqttClient>(MQTT_URL,MQTT_NAME);
-auto opts = mqtt::connect_options_builder()
-                .mqtt_version(MQTTVERSION_5)
-                .clean_start(true)
-                .finalize();
-opts.set_user_name(MQTT_USERNAME);
-opts.set_password(MQTT_PASSWD);
-mqttc.connect(opts);
-//订阅主题
-mqttc.subscribe("topic");
-//发布主题
-mqttc.subscribe("msg","MsgPayLoad");
+//创建一个串口模块 
+uart1 = IODevice::creatSerialDevice(loop_,"UART1");
+
+//初始化串口
+if(uart1->init("/dev/ttyS4")) 
+{
+    //设置接收回调
+    uart1->setReadCallback([](const char *data, int dataLen){
+            ByteBuf buf(data,dataLen);
+            std::cout << buf.data() << "  "<< dataLen  <<std::endl;
+            //将接收的数据写会串口
+            uart1->send(buf.data(),dataLen);
+    });
+}
+uart1->start();
 ```
+
 
 
 

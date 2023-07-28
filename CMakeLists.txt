@@ -30,8 +30,8 @@ include_directories(src/device)
 include_directories(src/app)
 include_directories(src/db)
 include_directories(src/net)
-# include_directories(src/proto)
 include_directories(src/event)
+include_directories(src/terminal)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/bin)
 set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)	   # 设置库文件的输出目录
@@ -46,45 +46,8 @@ add_subdirectory(${PROJECT_SOURCE_DIR}/src/base)
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/event)   
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/device)   
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/net)    
-add_subdirectory(${PROJECT_SOURCE_DIR}/src/db) 
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/db)
+add_subdirectory(${PROJECT_SOURCE_DIR}/src/terminal)
 #应用程序编译
 add_subdirectory(${PROJECT_SOURCE_DIR}/src/app) 
-#添加源文件路径
-# aux_source_directory(${CMAKE_SOURCE_DIR}/src/app SRC_LIST)
-# aux_source_directory(${CMAKE_SOURCE_DIR}/src/base SRC_LIST)
-# aux_source_directory(${CMAKE_SOURCE_DIR}/src/device SRC_LIST)
-# aux_source_directory(${CMAKE_SOURCE_DIR}/src/event SRC_LIST)
-# aux_source_directory(${CMAKE_SOURCE_DIR}/src/db SRC_LIST)
-# aux_source_directory(${CMAKE_SOURCE_DIR}/src/net SRC_LIST)
-# aux_source_directory(${CMAKE_SOURCE_DIR}/src/proto SRC_LIST)
-# aux_source_directory(${CMAKE_SOURCE_DIR}/src/. SRC_LIST)
-
-#添加动态连接库的路径
-# link_directories(${CMAKE_SOURCE_DIR}/usrlib) 
-
-#add_executable(想要生成的程序名 源文件)
-# add_executable(${PROJECT_NAME}  ${SRC_LIST})
-
-# if(BUILD_USE_STATIC)
-#     # 使用第三方动态库编译项目
-#     message(STATUS "Use  Static ThirdLib")
-#     target_link_libraries(${PROJECT_NAME}  
-#                             libcserialport.a
-#                             libhpsocket.a
-#                             libsqlite3.so
-# )
-# else()
-#     #使用第三方静态库编译项目
-#     message(STATUS "Use  Shard ThirdLib")
-#     target_link_libraries(${PROJECT_NAME}   
-#                             libcserialport.so
-#                             libhpsocket.so 
-#                             libsqlite3.so
-#                             libpaho-mqtt3a.so
-#                             libpaho-mqttpp3.so
-#                             libprotobuf.so
-#                             libprotoc.so)
-#     endif()
-
-# target_link_libraries(${PROJECT_NAME}  -lpthread -lrt -ldl -lm)
 

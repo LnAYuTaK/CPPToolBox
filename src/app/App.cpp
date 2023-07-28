@@ -1,5 +1,7 @@
 
 #include "App.h"
+#include "terminal.h"
+#include "session_context.h"
 //实例化模块
 Application::Application() 
                           :loop_(Loop::New()){
@@ -15,53 +17,23 @@ void Application::exec(){
 }
 
 void Application::start() {
+   
+  Terminal terminal;
+  auto session  =  terminal.newSession();
 
-  #ifdef SERIAL_TEST
-  Serial Port
-  uart1 = IODevice::creatSerialDevice(loop_,"UART1");
-  if(uart1->init("/dev/ttyS4"))
-  {
-    uart1->setReadCallback([](const char *data, int dataLen){
-          ByteBuf buf(data,dataLen);
-          std::cout << buf.data() << "  "<< dataLen  <<std::endl;
-    });
-  }
-  uart1->start();
-  #endif
+  auto session2  = terminal.newSession();
 
-  #ifdef TIMER_TEST
-  auto timer =  loop_->creatTimerEvent("Timer1");
-  timer->init(std::chrono::seconds(1), std::chrono::seconds(2));
-  timer->setTimerCallback([](){
-     CLOG_INFO() << "Timer Up";
-     CLOG_INFO() << "Timer End";
-    //  app()->uart1->send(buffer,sizeof(buffer));
-  });
-  timer->start();
-  #endif
+  auto session3  = terminal.newSession();
 
-  #ifdef TASK_TEST
-  loop_->runTask([](){
-    CLOG_INFO() << "Task INFO1";
-    THREAD_SLEEP_MS(2000);
-    CLOG_INFO() << "Task INFO1";
-  },false);
+  std::cout << session->id() << std::endl;
+  std::cout << session2->id()<< std::endl;
+  std::cout << session3->id()<< std::endl;
 
-    loop_->runTask([](){
-    CLOG_INFO() << "Task INFO2";
-  },true);
-  #endif
   
-  #ifdef ADC_TEST
-  ADCDevice ads1115;
-  ads1115.init("/dev/i2c-2");
-  ads1115.start();
-  float s= 0 ;
-  for (int i = 0; i < 20; i++)
-  {
-     ads1115.ads1115Read(&s);
-     CLOG_INFO() << s;
-     THREAD_SLEEP_MS(200);
-  }
-  #endif
+
+  terminal.printHelp(session);
+  terminal.printHelp(session2);
+  terminal.printHelp(session3);
+
+
 }
