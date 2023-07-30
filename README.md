@@ -1,7 +1,7 @@
 # 项目概述
 ### 项目文件结构
 ``` DIR
-|-- GKZD
+|-- Suzuha-CPP
     |-- CMakeLists.txt
     |-- LICENSE
     |-- README.md
@@ -24,7 +24,8 @@
 
 ## 项目介绍
 ### 系统架构
-项目做到了整体解耦 除了必要的base模块和event模块其他可以通过CMake选项增删
+项目 参考很多开源项目,做到了整体解耦 
+除了必要的base模块和event模块其他可以通过CMake选项增删
 <img src="res/sys_architeture.png" alt="System Architecture New" height="450">
 
 
@@ -35,7 +36,7 @@
 当您在项目的根路径时, 可以执行以下指令:
 
 ```console
-$ cd GWZD 
+$ cd Suzuha
 $ mkdir build && cd build
 $ cmake .. 
 $ make
