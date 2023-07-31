@@ -1,7 +1,7 @@
 # 项目概述
 ### 项目文件结构
 ``` DIR
-|-- Suzuha-CPP
+|--     CPPToolBox
     |-- CMakeLists.txt
     |-- LICENSE
     |-- README.md
