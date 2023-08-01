@@ -1,52 +1,44 @@
 #pragma once 
 
-#include "node.h"
-#include  <vector>
-#include "dir_node.h"
+#include "types.h"
+#include "Session.h"
+#include "Nodes.h"
 #include <string>
 #include <iostream>
+class Connection;
 class SessionContext;
 
-class Terminal{
+class Terminal {
   public:
-    Terminal();
+   Terminal();
     ~Terminal();
-    
-    enum Option : uint32_t {
+  public:
+      enum Option : uint32_t {
         kEnableEcho = 0x01,
         kQuietMode  = 0x02, //! 安静模式，不主动打印提示信息
     };
-  public:
-    /**********************************
-          terminal   
-    **********************************/
-    SessionContext* newSession();
-    bool deleteSession(SessionContext  *st);
-    uint32_t getOptions(SessionContext  *st) const;
-    void setOptions(SessionContext *st, uint32_t options);
-    bool onBegin(SessionContext *st);
-    bool onExit(SessionContext *st);
-    bool onRecvString(SessionContext *st, const std::string &str);
-    bool onRecvWindowSize(SessionContext *st, uint16_t w, uint16_t h);
-    void printPrompt(SessionContext *s);
-    void printHelp(SessionContext *s);
+    SessionToken newSession(Connection *wp_conn);
+    bool deleteSession(const SessionToken &st);
 
+    uint32_t getOptions(const SessionToken &st) const;
+    void setOptions(const SessionToken &st, uint32_t options);
+
+    bool onBegin(const SessionToken &st);
+    bool onExit(const SessionToken &st);
+
+    bool onRecvString(const SessionToken &st, const std::string &str);
+    bool onRecvWindowSize(const SessionToken &st, uint16_t w, uint16_t h);
 
   public:
-    /**********************************
-          terminal_nodes   
-    **********************************/
-    Node* createFuncNode(const NodeFunc &func, const std::string &help);
-    Node* createDirNode(const std::string &help);
-    Node* rootNode() const;
-    Node* findNode(const std::string &path) const;
-    bool  findNode(const std::string &path, Path &node_path) const;
-    //bool  mountNode(const Node &parent, const Node &child, const std::string &name);
-    /**********************************
-          terminal_key_events  
-    **********************************/
+    NodeToken createFuncNode(const Func &func, const std::string &help);
+    NodeToken createDirNode(const std::string &help);
+    NodeToken rootNode() const;
+    NodeToken findNode(const std::string &path) const;
+    bool mountNode(const NodeToken &parent, const NodeToken &child, const std::string &name);
+
+  protected:
     void onChar(SessionContext *s, char ch);
-//     void onEnterKey(SessionContext *s);
+    void onEnterKey(SessionContext *s);
     void onBackspaceKey(SessionContext *s);
     void onDeleteKey(SessionContext *s);
     void onTabKey(SessionContext *s);
@@ -56,24 +48,33 @@ class Terminal{
     void onMoveRightKey(SessionContext *s);
     void onHomeKey(SessionContext *s);
     void onEndKey(SessionContext *s);
-    /**********************************
-          terminal_key_events  
-    **********************************/
+
+    void printPrompt(SessionContext *s);
+    void printHelp(SessionContext *s);
+
     bool execute(SessionContext *s);
     bool executeCmd(SessionContext *s, const std::string &cmdline);
-    void executeCdCmd(SessionContext *s, const Args &args);
-//     void executeHelpCmd(SessionContext *s, const Args &args);
-//     void executeLsCmd(SessionContext *s, const Args &args);
-//     void executeHistoryCmd(SessionContext *s, const Args &args);
-//     void executeExitCmd(SessionContext *s, const Args &args);
-//     void executeTreeCmd(SessionContext *s, const Args &args);
-//     void executePwdCmd(SessionContext *s, const Args &args);
-//     bool executeRunHistoryCmd(SessionContext *s, const Args &args);
-//     void executeUserCmd(SessionContext *s, const Args &args);
-  private:
-   std::vector<SessionContext*> sessions_;
-   std::vector<Node*>  nodes_;
-   //最顶端的Node
-   Node *    rootNode_;   
 
+    void executeCdCmd(SessionContext *s, const Args &args);
+    void executeHelpCmd(SessionContext *s, const Args &args);
+    void executeLsCmd(SessionContext *s, const Args &args);
+    void executeHistoryCmd(SessionContext *s, const Args &args);
+    void executeExitCmd(SessionContext *s, const Args &args);
+    void executeTreeCmd(SessionContext *s, const Args &args);
+    void executePwdCmd(SessionContext *s, const Args &args);
+    bool executeRunHistoryCmd(SessionContext *s, const Args &args);
+    void executeUserCmd(SessionContext *s, const Args &args);
+
+    bool findNode(const std::string &path, Path &node_path) const;
+
+  private:
+    Cabinet<SessionContext> sessions_;
+    Cabinet<Node> nodes_;
+    NodeToken root_token_;
 };
+
+
+
+
+
+

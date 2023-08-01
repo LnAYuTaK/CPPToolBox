@@ -1,66 +1,85 @@
-#include "terminal.h"
+#include "Terminal.h"
 
 #include <sstream>
-#include "session_context.h"
-#include "dir_node.h"
-#include "func_node.h"
+
+#include "Connection.h"
+#include "SessionContext.h"
+#include "Nodes.h"
+
+#include <string>
+#include <iostream>
+
+using namespace std;
 
 Terminal::Terminal()
-    :rootNode_(new DirNode("this is root node")){
-}
-
-Terminal::~Terminal(){
-}
-
-SessionContext* Terminal::newSession() {
-    auto session  = new  SessionContext(sessions_.size());
-    sessions_.push_back(session);
-    return session;
-}
-
-bool Terminal::deleteSession(SessionContext *st) {
-    // 取出并删除指定元素
-    auto it = std::find(sessions_.begin(), sessions_.end(), st);
-    if (it != sessions_.end()) {
-        auto removeSession = *it;
-        sessions_.erase(it);
-        delete removeSession;
-        removeSession = nullptr;
-        return true;
-    } else {
-          return false ;
-    }
-}
-
-uint32_t Terminal::getOptions(SessionContext  *st) const
 {
-    auto s = sessions_.at(st->id());
-    if (s == nullptr) {
-        return 0;
+    root_token_ = nodes_.alloc(new DirNode("this is root node"));
+}
+
+Terminal::~Terminal()
+{
+    sessions_.foreach(
+        [](SessionContext *p) {
+            delete p;
+        }
+    );
+    sessions_.clear();
+
+    nodes_.foreach(
+        [](Node *p) {
+            delete p;
+        }
+    );
+    nodes_.clear();
+}
+
+SessionToken Terminal::newSession(Connection *wp_conn)
+{
+    auto s = new SessionContext;
+    auto t = sessions_.alloc(s);
+    s->wp_conn = wp_conn;
+    s->token = t;
+    return t;
+}
+
+bool Terminal::deleteSession(const SessionToken &st)
+{
+    auto s = sessions_.free(st);
+    if (s != nullptr) {
+        delete s;
+        return true;
     }
+    return false;
+}
+
+uint32_t Terminal::getOptions(const SessionToken &st) const
+{
+    auto s = sessions_.at(st);
+    if (s == nullptr)
+        return 0;
 
     return s->options;
 }
 
-void Terminal::setOptions(SessionContext  *st, uint32_t options)
+void Terminal::setOptions(const SessionToken &st, uint32_t options)
 {
-    auto s = sessions_.at(st->id());
-    if (s == nullptr) {
+    auto s = sessions_.at(st);
+    if (s == nullptr)
         return;
-    }
+
     s->options = options;
 }
 
-bool Terminal::onBegin(SessionContext  *st)
+bool Terminal::onBegin(const SessionToken &st)
 {
-    auto s = sessions_.at(st->id());
+    auto s = sessions_.at(st);
     if (s == nullptr)
         return false;
 
     if (!(s->options & kQuietMode)) {
-        s->send(
+        s->wp_conn->send(st,
             "\r\n"
-            "Welcome to  Terminal.\r\n"
+            "Welcome to CppTBox Terminal.\r\n"
             "Type 'help' for more information.\r\n"
             "\r\n"
         );
@@ -70,19 +89,19 @@ bool Terminal::onBegin(SessionContext  *st)
     return true;
 }
 
-bool Terminal::onExit(SessionContext  *st)
+bool Terminal::onExit(const SessionToken &st)
 {
-    auto s = sessions_.at(st->id());
+    auto s = sessions_.at(st);
     if (s == nullptr)
         return false;
 
-    s->send("Bye!");
+    s->wp_conn->send(st, "Bye!");
     return true;
 }
 
-bool Terminal::onRecvString(SessionContext  *st, const std::string &str)
+bool Terminal::onRecvString(const SessionToken &st, const string &str)
 {
-    auto s = sessions_.at(st->id());
+    auto s = sessions_.at(st);
     if (s == nullptr)
         return false;
 
@@ -96,7 +115,7 @@ bool Terminal::onRecvString(SessionContext  *st, const std::string &str)
                     onChar(s, c);
                     break;
                 case KeyEventScanner::Result::kEnter:
-                    //onEnterKey(s);
+                    onEnterKey(s);
                     break;
                 case KeyEventScanner::Result::kBackspace:
                     onBackspaceKey(s);
@@ -136,7 +155,7 @@ bool Terminal::onRecvString(SessionContext  *st, const std::string &str)
         if (s->key_event_scanner_.stop() == KeyEventScanner::Status::kEnsure) {
             switch (s->key_event_scanner_.result()) {
                 case KeyEventScanner::Result::kEnter:
-                    // onEnterKey(s);
+                    onEnterKey(s);
                     break;
 
                 default:
@@ -147,9 +166,9 @@ bool Terminal::onRecvString(SessionContext  *st, const std::string &str)
     return true;
 }
 
-bool Terminal::onRecvWindowSize(SessionContext  *st, uint16_t w, uint16_t h)
+bool Terminal::onRecvWindowSize(const SessionToken &st, uint16_t w, uint16_t h)
 {
-    auto s = sessions_.at(st->id());
+    auto s = sessions_.at(st);
     if (s != nullptr) {
         s->window_width = w;
         s->window_height = h;
@@ -161,13 +180,13 @@ bool Terminal::onRecvWindowSize(SessionContext  *st, uint16_t w, uint16_t h)
 void Terminal::printPrompt(SessionContext *s)
 {
     if (!(s->options & kQuietMode))
-        s->send("# ");
+        s->wp_conn->send(s->token, "# ");
 }
 
 void Terminal::printHelp(SessionContext *s)
 {
     const char *help_str = \
-        "This terminal is only for internal debugging within the company\r\n"
+        "This terminal is designed by Hevake Lee <hevake@126.com>, integrated in CppTBox.\r\n"
         "It provides a way to interact with the program in the form of shell.\r\n"
         "\r\n"
         "There are some buildin commands:\r\n"
@@ -183,13 +202,15 @@ void Terminal::printHelp(SessionContext *s)
         "- !-n       Run the last n command of history\r\n"
         "- !!        Run last command\r\n"
         "\r\n";
-    s->send(help_str);
+    s->wp_conn->send(s->token, help_str);
 
     if (s->options & kEnableEcho) {
         const char *extra_str = \
             "Besides, UP,DOWN,LEFT,RIGHT,HOME,END,DELETE keys are available.\r\n"
             "Try them.\r\n"
-            "\r\n";
-         s->send(extra_str);
+            "\r\n"
+            ;
+        s->wp_conn->send(s->token, extra_str);
     }
 }
+

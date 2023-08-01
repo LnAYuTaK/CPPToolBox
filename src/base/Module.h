@@ -1,12 +1,12 @@
 /**
  * @file Module.h
- * @author LnAYuTaK (807874484@qq.com)
- * @brief  基础Module模块
+ * @author 刘宽 (807874484@qq.com)
+ * @brief   基础单元模块
  * @version 0.1
- * @date 2023-07-12
- *
- * @copyright Copyright (c) 2023
- *
+ * @date 2023-07-29
+ * 
+ *  Copyright (c) 2023 国网中电研发部
+ * 
  */
 #pragma once
 

@@ -1,7 +1,7 @@
 
 #include "App.h"
-#include "terminal.h"
-#include "session_context.h"
+#include "Terminal.h"
+#include "Connection.h"
 //实例化模块
 Application::Application() 
                           :loop_(Loop::New()){
@@ -16,24 +16,66 @@ void Application::exec(){
    this->loop_->runLoop(Loop::Mode::kForever);
 }
 
+void sync_func()
+{
+  std::cout <<"121212"<< std::endl;
+}
+void async_func()
+{
+  std::cout <<"121212"<< std::endl;
+}
+
+class ConnectionTest : public Connection
+{
+private:
+  /* data */
+public:
+  ConnectionTest  (){}
+  ~ConnectionTest    (){}
+   bool send(const SessionToken &st, char ch) override 
+    {
+      return false;
+
+    }
+     bool send(const SessionToken &st, const std::string &str)override 
+    {
+         return false;
+
+    }
+     bool endSession(const SessionToken &st) override 
+    {
+ return false;
+
+    }
+    bool isValid(const SessionToken &st) const override 
+    {
+ return false;
+
+    }
+
+
+};
+
+
+
+
 void Application::start() {
    
-  Terminal terminal;
-  auto session  =  terminal.newSession();
+  Terminal term;
+  ConnectionTest *test = new ConnectionTest();
+  auto session  =  term.newSession(test );
 
-  auto session2  = terminal.newSession();
+    auto dir1_token = term.createDirNode("This is dir1");
+    auto dir2_token = term.createDirNode("This is dir2");
 
-  auto session3  = terminal.newSession();
+    auto dir1_1_token = term.createDirNode("This is dir1_1");
+    auto dir1_2_token = term.createDirNode("This is dir1_2");
 
-  std::cout << session->id() << std::endl;
-  std::cout << session2->id()<< std::endl;
-  std::cout << session3->id()<< std::endl;
+    term.mountNode(dir1_token, dir1_1_token, "dir1_1");
+    term.mountNode(dir1_token, dir1_2_token, "dir1_2");
 
-  
+    term.mountNode(term.rootNode(), dir1_token, "dir1");
+    term.mountNode(term.rootNode(), dir2_token, "dir2");
 
-  terminal.printHelp(session);
-  terminal.printHelp(session2);
-  terminal.printHelp(session3);
-
-
+    term.mountNode(dir1_1_token, term.rootNode(), "root");  //! 循环引用
 }

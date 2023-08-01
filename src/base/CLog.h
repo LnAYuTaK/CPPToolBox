@@ -4,7 +4,7 @@
  * @brief  日志模块
  * @version 0.1
  * @date 2023-06-13
- * 多线程安全，加锁，通过匿名对象实现日志流输出
+ * 
  * @copyright Copyright (c) 2023 国网中电研发部
  * 
  */

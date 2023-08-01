@@ -1,4 +1,3 @@
-#pragma once
 /**
  * @file ThreadPool.h
  * @author LnAYuTaK (807874484@qq.com)
@@ -9,6 +8,7 @@
  * @copyright Copyright (c) 2023
  *
  */
+# pragma once 
 #include <functional>
 #include <future>
 #include <mutex>
@@ -20,6 +20,7 @@
 #include "MacroDef.h"
 
 class ThreadPool {
+  //禁止拷贝构造
   DISALLOW_COPY_AND_ASSIGN(ThreadPool);
  private:
   class ThreadWorker {
@@ -106,5 +107,4 @@ class ThreadPool {
     std::vector<std::thread> m_threads;
     std::mutex m_conditional_mutex;
     std::condition_variable m_conditional_lock;
-
 };

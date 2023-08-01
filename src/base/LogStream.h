@@ -5,7 +5,7 @@
  * @version 0.1
  * @date 2023-07-02
  *
- * @copyright Copyright (c) 2023
+ * @copyright Copyright (c) 2023 国网中电研发部
  *
  */
 #pragma once
