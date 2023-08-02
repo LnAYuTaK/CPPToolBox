@@ -1,12 +1,12 @@
 
-#pragma once 
+#pragma once
 
 #include <arpa/inet.h>
 
+#include <sys/socket.h>
 #include <cstring>
 #include <iostream>
 #include <string>
-#include <sys/socket.h>
 class NetAddress {
  public:
   enum class Protocol { Ipv4, Ipv6 };
@@ -15,18 +15,18 @@ class NetAddress {
 
   ~NetAddress();
 
-  inline Protocol protocol()const;
+  inline Protocol protocol() const;
 
-  struct sockaddr * addr()const;
+  struct sockaddr *addr() const;
 
-  socklen_t * addrLen()  ;
+  socklen_t *addrLen();
 
-  std::string  ip() const ;
+  std::string ip() const;
 
-  uint16_t port() const ;
-private:
-    Protocol protocol_{Protocol::Ipv4};
-    mutable struct sockaddr_storage addr_ {};
-    socklen_t  addrLen_;
+  uint16_t port() const;
+
+ private:
+  Protocol protocol_{Protocol::Ipv4};
+  mutable struct sockaddr_storage addr_ {};
+  socklen_t addrLen_;
 };
-

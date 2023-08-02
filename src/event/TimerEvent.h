@@ -4,9 +4,9 @@
  * @brief  定时器事件
  * @version 0.1
  * @date 2023-07-20
- * 
+ *
  * @copyright Copyright (c) 2023 国网中电研发部
- * 
+ *
  */
 #pragma once
 
@@ -19,7 +19,6 @@
 #include "MacroDef.h"
 
 class TimerEvent : public Event {
-
   using TimerCallback = std::function<void()>;
 
  public:
@@ -63,29 +62,29 @@ class TimerEvent : public Event {
   std::chrono::nanoseconds remainTime() const;
   /**
    * @brief 用于获取当前时间与纪元（Epoch）之间的时间差
-   * 
-   * @return uint64_t 
+   *
+   * @return uint64_t
    */
   uint64_t nowSinceEpoch();
   /**
    * @brief 返回从当前时间到给定时间戳的时间差
-   * 
-   * @param timestamp 
-   * @return uint64_t 
+   *
+   * @param timestamp
+   * @return uint64_t
    */
   uint64_t fromNow(uint64_t timestamp);
   /**
    * @brief 接受一个时间戳作为参数，并将时间差转换为timespec结构
-   * 
-   * @param timestamp 
-   * @return struct timespec 
+   *
+   * @param timestamp
+   * @return struct timespec
    */
-  struct timespec  fromNowInTimeSpec(uint64_t timestamp);
+  struct timespec fromNowInTimeSpec(uint64_t timestamp);
 
  private:
   void onTimerEvent();
   int timerFd_;
-  TimerCallback  timerCallback_;
+  TimerCallback timerCallback_;
   struct itimerspec timerSpec_;
   EpollFdEvent *TimerEvent_;
 };

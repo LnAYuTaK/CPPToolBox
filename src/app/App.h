@@ -4,9 +4,9 @@
  * @brief 应用程序APP(单例)
  * @version 0.1
  * @date 2023-06-26
- * 
+ *
  * @copyright Copyright (c) 2023 国网中电研发部
- * 
+ *
  */
 #pragma once
 // std
@@ -24,15 +24,15 @@
 #include "MacroDef.h"
 #include "ThreadPool.h"
 // app
+#include "ADCDevice.h"
+#include "Database.h"
 #include "EpollFdEvent.h"
-#include "TimerEvent.h"
 #include "FdEvent.h"
 #include "Loop.h"
-#include "Database.h"
+#include "SerialDevice.h"
 #include "TCPClient.h"
 #include "TCPServer.h"
-#include "ADCDevice.h"
-#include "SerialDevice.h"
+#include "TimerEvent.h"
 
 class Application {
   //单例

@@ -2,11 +2,13 @@
  * @file CLog.h
  * @author 刘宽 (807874484@qq.com)
  * @brief  日志模块
+ * 注意文件是同步写入 大量IO操作可能导致性能问题
+ * 考虑实现一个异步文件读写
  * @version 0.1
  * @date 2023-06-13
- * 
+ *
  * @copyright Copyright (c) 2023 国网中电研发部
- * 
+ *
  */
 #pragma once
 #include <cstdio>
@@ -27,10 +29,6 @@ class CLOG {
     CLOG_LEVEL_ERROR,
   };
 
-  static constexpr const char* LogLevelName[4] = {" DEBUG", " INFO ", " WARN ",
-                                                  " ERROR"};
-  // Not Used
-  static constexpr const int LogLevelColor[4] = {34, 32, 33, 31};
   ~CLOG();
 
   static unsigned long long GetCurrentThreadId();
@@ -51,43 +49,11 @@ class CLOG {
   class LogMsg {
    public:
     // DEBUG INFO
-    LogMsg(CLOG_LEVEL nLevel, const char* pcFunc, const int& line) {
-      std::lock_guard<std::mutex> lock(_mtx);
-      nLevel_ = (int)nLevel;
-      _stream.zeroBuffer();
-      _stream << "[" << CLOG::GetCurrentDateTime() << "]"
-              << "[" << LogLevelName[(int)nLevel] << "]"
-              << "[" << pcFunc << "]"
-              << "[" << line << "]";
-    }
+    LogMsg(CLOG_LEVEL nLevel, const char* pcFunc, const int& line);
     // WARN ERROR
     LogMsg(CLOG_LEVEL nLevel, const char* pcFunc, const char* file,
-           const int& line) {
-      std::lock_guard<std::mutex> lock(_mtx);
-      nLevel_ = (int)nLevel;
-      _stream.zeroBuffer();
-      _stream << "[" << CLOG::GetCurrentDateTime() << "]"
-              << "[" << LogLevelName[nLevel] << "]"
-              << "[" << pcFunc << "]"
-              << "[" << file << "]"
-              << "[" << line << "]";
-    }
-    ~LogMsg() {
-      std::lock_guard<std::mutex> lock(_mtx);
-      if (CLOG::Instance()->isToFile()) {
-        std::fstream f;
-        std::string s = CLOG::GetCurrentData() + ".log";
-        f.open(s, std::fstream::out | std::fstream::app);
-        f << _stream.buffer().data() << std::endl;
-        if (f.is_open()) {
-          f.flush();
-          f.close();
-        }
-      }
-      fprintf(stdout, "\033[%dm%s\e[0m\n", LogLevelColor[nLevel_],
-              _stream.buffer().data());
-      fflush(stdout);
-    }
+           const int& line);
+    ~LogMsg();
     LogStream& stream() { return _stream; }
 
    private:

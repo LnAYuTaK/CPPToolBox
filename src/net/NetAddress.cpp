@@ -1,7 +1,8 @@
 
 #include "NetAddress.h"
 
-NetAddress::NetAddress(const char *ip, uint16_t port, Protocol protocol) : protocol_(protocol) {
+NetAddress::NetAddress(const char *ip, uint16_t port, Protocol protocol)
+    : protocol_(protocol) {
   memset(&addr_, 0, sizeof(addr_));
   addrLen_ = sizeof(addr_);
   if (protocol_ == Protocol::Ipv4) {
@@ -17,20 +18,16 @@ NetAddress::NetAddress(const char *ip, uint16_t port, Protocol protocol) : proto
   }
 }
 
-NetAddress::Protocol NetAddress::protocol() const  {
-     return protocol_; 
+NetAddress::Protocol NetAddress::protocol() const { return protocol_; }
+
+struct sockaddr *NetAddress::addr() const {
+  return reinterpret_cast<struct sockaddr *>(&addr_);
 }
 
-struct sockaddr *NetAddress::addr() const{ 
-    return reinterpret_cast<struct sockaddr *>(&addr_); 
-}
+socklen_t *NetAddress::addrLen() { return &addrLen_; }
 
-socklen_t * NetAddress::addrLen()  { 
-    return &addrLen_; 
-}
-
- std::string NetAddress::ip() const  {
-  char ip_address[INET6_ADDRSTRLEN];  
+std::string NetAddress::ip() const {
+  char ip_address[INET6_ADDRSTRLEN];
   if (protocol_ == NetAddress::Protocol::Ipv4) {
     auto addr_ipv4 = reinterpret_cast<struct sockaddr_in *>(&addr_);
     inet_ntop(AF_INET, &addr_ipv4->sin_addr, ip_address, INET_ADDRSTRLEN);
@@ -41,7 +38,7 @@ socklen_t * NetAddress::addrLen()  {
   return ip_address;
 }
 
-uint16_t NetAddress::port() const  {
+uint16_t NetAddress::port() const {
   uint16_t port;
   if (protocol_ == Protocol::Ipv4) {
     auto addr_ipv4 = reinterpret_cast<struct sockaddr_in *>(&addr_);
@@ -52,4 +49,3 @@ uint16_t NetAddress::port() const  {
   }
   return port;
 }
-

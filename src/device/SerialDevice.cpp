@@ -8,8 +8,8 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <string>
 #include <mutex>
+#include <string>
 #include "CLog.h"
 #include "MacroDef.h"
 
@@ -25,7 +25,7 @@ SerialDevice::SerialDevice(EpollLoop *loop, const std::string &name)
       serialEvent_(nullptr),
       readBuffer_(),
       writeBuffer_() {
-      name_ = name;
+  name_ = name;
 }
 SerialDevice::~SerialDevice() { cleanup(); }
 
@@ -34,26 +34,27 @@ bool SerialDevice::init(const std::string &portName, BaudRate baudRate,
                         FlowControl flowControl, OperateMode mode,
                         size_t bufferSize) {
   cleanup();
-  if(state()  != State::kNone){
-      return false;
+  if (state() != State::kNone) {
+    return false;
   }
   mode_ = mode;
-  //Rsize 
+  // Rsize
   readBuffer_.capacity((int)bufferSize);
   writeBuffer_.capacity((int)bufferSize);
   serialEvent_ = loop_->creatFdEvent(name_);
-  //Fd init
-  fd_ = Fd::Open(portName.c_str(), O_RDWR | O_NOCTTY|O_NDELAY);
+  // Fd init
+  fd_ = Fd::Open(portName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
   fd_.setNonBlock(true);
   if (!(serialEvent_->init(fd_.get(), Event::Mode::kPersist))) {
-    CLOG_ERROR() <<  name_ << ": Serial Event Init Error";
+    CLOG_ERROR() << name_ << ": Serial Event Init Error";
     return false;
   }
-  //SetWriteCallBack
-  serialEvent_->setWriteCallback(std::bind(&SerialDevice::onWriteCallBack,this));
-  //Set Uart
+  // SetWriteCallBack
+  serialEvent_->setWriteCallback(
+      std::bind(&SerialDevice::onWriteCallBack, this));
+  // Set Uart
   if (!(uartSet(fd_, baudRate, parity, dataBits, stopbits, flowControl))) {
-    CLOG_ERROR() <<   name_ << ":  " << portName << ": Serial Set Error";
+    CLOG_ERROR() << name_ << ":  " << portName << ": Serial Set Error";
     return false;
   }
   setState(State::kInited);
@@ -61,48 +62,41 @@ bool SerialDevice::init(const std::string &portName, BaudRate baudRate,
 }
 
 bool SerialDevice::start() {
-  if(state()  == State::kInited ) {
-      serialEvent_->enableReading();
-      setState(State::kRunning);
-      return true;
-  }
-  else {
-    if(state() == State::kNone) {
-          CLOG_WARN() << name() << ":  Serial  Need Init";
+  if (state() == State::kInited) {
+    serialEvent_->enableReading();
+    setState(State::kRunning);
+    return true;
+  } else {
+    if (state() == State::kNone) {
+      CLOG_WARN() << name() << ":  Serial  Need Init";
     }
-     return false;
+    return false;
   }
 }
 
 void SerialDevice::stop() {
-  if(state()  == State::kRunning) {
-       serialEvent_-> disableAll();
-  }
-  else {
+  if (state() == State::kRunning) {
+    serialEvent_->disableAll();
+  } else {
     CLOG_WARN() << name() << ":  Serial  Need Init";
   }
 }
 
 void SerialDevice::close() {
-        stop();
-        cleanup();
-        setState(State::kNone);
+  stop();
+  cleanup();
+  setState(State::kNone);
 }
 
-void SerialDevice::cleanup() {
-    CHECK_DELETE_RESET_OBJ(serialEvent_);
-}
+void SerialDevice::cleanup() { CHECK_DELETE_RESET_OBJ(serialEvent_); }
 
 void SerialDevice::setReadCallback(ReadCallBack &&cb) {
-
   readCallBack_ = std::move(cb);
-    if (serialEvent_) {
-        serialEvent_->setReadCallback([this](int time) {
-        { 
-          this->onReadCallBack();
-        }
-      });
-    }
+  if (serialEvent_) {
+    serialEvent_->setReadCallback([this](int time) {
+      { this->onReadCallBack(); }
+    });
+  }
 }
 
 bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
@@ -133,14 +127,16 @@ bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
       options.c_cflag |= PARENB;  // PARENB：产生奇偶位，执行奇偶校验
       options.c_cflag |= PARODD;  // PARODD：若设置则为奇校验,否则为偶校验
       options.c_cflag |= INPCK;  // INPCK：使奇偶校验起作用
-      options.c_cflag |= ISTRIP;  // ISTRIP：若设置则有效输入数字被剥离7个字节，否则保留全部8位
+      options.c_cflag |=
+          ISTRIP;  // ISTRIP：若设置则有效输入数字被剥离7个字节，否则保留全部8位
       break;
     // 设置偶校验
     case ParityEven:
       options.c_cflag |= PARENB;  // PARENB：产生奇偶位，执行奇偶校验
       options.c_cflag &= ~PARODD;  // PARODD：若设置则为奇校验,否则为偶校验
       options.c_cflag |= INPCK;  // INPCK：使奇偶校验起作用
-      options.c_cflag |=ISTRIP;  // ISTRIP：若设置则有效输入数字被剥离7个字节，否则保留全部8位
+      options.c_cflag |=
+          ISTRIP;  // ISTRIP：若设置则有效输入数字被剥离7个字节，否则保留全部8位
       break;
     // 设置0校验
     case ParitySpace:
@@ -215,84 +211,76 @@ bool SerialDevice::uartSet(Fd &fd, BaudRate baudRate, Parity parity,
   return true;
 }
 
-void SerialDevice::onReadCallBack()
-{
+void SerialDevice::onReadCallBack() {
   //双缓存读取
   struct iovec rbuf[2];
   char bufferTemp[1024];
   char bufferTemp2[1024];
-  bzero(bufferTemp,sizeof(bufferTemp));
-  bzero(bufferTemp2,sizeof(bufferTemp2));
+  bzero(bufferTemp, sizeof(bufferTemp));
+  bzero(bufferTemp2, sizeof(bufferTemp2));
 
   rbuf[0].iov_base = bufferTemp;
-  rbuf[0].iov_len  = sizeof(bufferTemp);
+  rbuf[0].iov_len = sizeof(bufferTemp);
   rbuf[1].iov_base = bufferTemp2;
-  rbuf[1].iov_len  = sizeof(bufferTemp2);
+  rbuf[1].iov_len = sizeof(bufferTemp2);
 
   ssize_t rsize = fd_.readv(rbuf, 2);
-  if(LIKELY(rsize> 0)) {    //说明读取到了数据
-      do {
-            //如果一次读取超过了缓存区1 那么数据应该在缓存区2有一部分
-            if (static_cast<size_t>(rsize) > sizeof(bufferTemp)) {
-                 //那么超过的数据应该是
-              size_t reMainData =  rsize -sizeof(bufferTemp); 
-              readBuffer_.writeBytes(bufferTemp,sizeof(bufferTemp)).writeBytes(bufferTemp2,reMainData);
-            }
-            else {
-                readBuffer_.writeBytes(bufferTemp,rsize); 
-            }
-      } while (rsize = fd_.readv(rbuf, 2) > 0);
-      if(readCallBack_)
-      {
-        readCallBack_(readBuffer_.data(),readBuffer_.readableBytes());
+  if (LIKELY(rsize > 0)) {  //说明读取到了数据
+    do {
+      //如果一次读取超过了缓存区1 那么数据应该在缓存区2有一部分
+      if (static_cast<size_t>(rsize) > sizeof(bufferTemp)) {
+        //那么超过的数据应该是
+        size_t reMainData = rsize - sizeof(bufferTemp);
+        readBuffer_.writeBytes(bufferTemp, sizeof(bufferTemp))
+            .writeBytes(bufferTemp2, reMainData);
+      } else {
+        readBuffer_.writeBytes(bufferTemp, rsize);
       }
-  }
-  else if(rsize == 0) {
-     CLOG_WARN() <<name_<< ": READ ZERO";
-  }
-  else {
-     CLOG_ERROR() << name_<<": Read Buffer Error";
+    } while (rsize = fd_.readv(rbuf, 2) > 0);
+    if (readCallBack_) {
+      readCallBack_(readBuffer_.data(), readBuffer_.readableBytes());
+    }
+  } else if (rsize == 0) {
+    CLOG_WARN() << name_ << ": READ ZERO";
+  } else {
+    CLOG_ERROR() << name_ << ": Read Buffer Error";
   }
   readBuffer_.clear();
 }
 
-void SerialDevice::onWriteCallBack(){
-
-  if(writeBuffer_.readableBytes() == 0) {
+void SerialDevice::onWriteCallBack() {
+  if (writeBuffer_.readableBytes() == 0) {
     serialEvent_->disableWriting();
     return;
-  }
-  else {
-    ssize_t wsize = fd_.write(writeBuffer_.readBytes(writeBuffer_.readableBytes()).data(), \
-                                      sizeof(writeBuffer_.readableBytes()));
-    if(wsize<0){
-      CLOG_WARN()<< name_<< ": WriteBuff Error WSize: " << wsize; 
+  } else {
+    ssize_t wsize =
+        fd_.write(writeBuffer_.readBytes(writeBuffer_.readableBytes()).data(),
+                  sizeof(writeBuffer_.readableBytes()));
+    if (wsize < 0) {
+      CLOG_WARN() << name_ << ": WriteBuff Error WSize: " << wsize;
     }
   }
 }
 
-void SerialDevice::send(const char *data,size_t len) {
-
-  if(state()!=State::kRunning){
+void SerialDevice::send(const char *data, size_t len) {
+  if (state() != State::kRunning) {
     CLOG_WARN() << name_ << ": Need Running First";
     return;
   }
-  if(writeBuffer_.readableBytes() > 0){
-    writeBuffer_.writeBytes(data,len);
-  }
-  else {
-    ssize_t wsize = fd_.write(data,len);
-    if(wsize >=0) {
+  if (writeBuffer_.readableBytes() > 0) {
+    writeBuffer_.writeBytes(data, len);
+  } else {
+    ssize_t wsize = fd_.write(data, len);
+    if (wsize >= 0) {
       if (static_cast<size_t>(wsize) < len) {
         //! 则将剩余的数据放入到缓冲区
-        const char* remain =  data + wsize;
-        writeBuffer_.writeBytes(data,(len-wsize));
+        const char *remain = data + wsize;
+        writeBuffer_.writeBytes(data, (len - wsize));
         serialEvent_->enableWriting();
       }
-    }
-    else { //ERROR
-        writeBuffer_.writeBytes(data,len);
-        serialEvent_->enableWriting();
+    } else {  // ERROR
+      writeBuffer_.writeBytes(data, len);
+      serialEvent_->enableWriting();
     }
   }
 }

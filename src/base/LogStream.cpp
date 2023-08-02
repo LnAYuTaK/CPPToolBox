@@ -37,7 +37,6 @@ LogStream &LogStream::operator<<(int v) {
 //   return *this;
 // }
 
-
 LogStream &LogStream::operator<<(unsigned int v) {
   formatInteger(v);
   return *this;

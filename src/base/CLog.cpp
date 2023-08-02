@@ -9,11 +9,53 @@
 
 #include <chrono>
 #include <iomanip>
-
+static constexpr const char *LogLevelName[4] = {" DEBUG", " INFO ", " WARN ",
+                                                " ERROR"};
+// Not Used
+static constexpr const int LogLevelColor[4] = {34, 32, 33, 31};
 thread_local char _timebuf[64] = {0x00};
 CLOG::CLOG() : _ToFile(true), _ToTerminal(true), _MxLogBufferSize(256) {}
 /***********************************************************/
 CLOG::~CLOG() {}
+/***********************************************************/
+CLOG::LogMsg::LogMsg(CLOG_LEVEL nLevel, const char *pcFunc, const int &line) {
+  std::lock_guard<std::mutex> lock(_mtx);
+  nLevel_ = (int)nLevel;
+  _stream.zeroBuffer();
+  _stream << "[" << CLOG::GetCurrentDateTime() << "]"
+          << "[" << LogLevelName[(int)nLevel] << "]"
+          << "[" << pcFunc << "]"
+          << "[" << line << "]";
+}
+/***********************************************************/
+CLOG::LogMsg::LogMsg(CLOG_LEVEL nLevel, const char *pcFunc, const char *file,
+                     const int &line) {
+  std::lock_guard<std::mutex> lock(_mtx);
+  nLevel_ = (int)nLevel;
+  _stream.zeroBuffer();
+  _stream << "[" << CLOG::GetCurrentDateTime() << "]"
+          << "[" << LogLevelName[nLevel] << "]"
+          << "[" << pcFunc << "]"
+          << "[" << file << "]"
+          << "[" << line << "]";
+}
+/***********************************************************/
+CLOG::LogMsg::~LogMsg() {
+  std::lock_guard<std::mutex> lock(_mtx);
+  if (CLOG::Instance()->isToFile()) {
+    std::fstream f;
+    std::string s = CLOG::GetCurrentData() + ".log";
+    f.open(s, std::fstream::out | std::fstream::app);
+    f << _stream.buffer().data() << std::endl;
+    if (f.is_open()) {
+      f.flush();
+      f.close();
+    }
+  }
+  fprintf(stdout, "\033[%dm%s\e[0m\n", LogLevelColor[nLevel_],
+          _stream.buffer().data());
+  fflush(stdout);
+}
 /***********************************************************/
 //[2023.06.28-01:31:21]
 std::string CLOG::GetCurrentDateTime() {

@@ -9,20 +9,19 @@
 #pragma once
 
 #include <iostream>
+#include "ByteBuf.h"
+#include "CLog.h"
 #include "EpollFdEvent.h"
 #include "EpollLoop.h"
 #include "Fd.h"
 #include "IODevice.h"
-#include "Module.h"
 #include "MacroDef.h"
-#include "ByteBuf.h"
-#include "CLog.h"
+#include "Module.h"
 
 class SerialDevice : public IODevice {
-
   using ReadCallBack = std::function<void(const char *, int)>;
- public:
 
+ public:
   struct SerialDeviceInfo {
     std::string portName;     ///< portName 串口名称
     std::string description;  ///< description 串口描述
@@ -76,39 +75,38 @@ class SerialDevice : public IODevice {
     FlowHardware = 1,  ///< Hardware(RTS / CTS) flow control 硬件流控制
     FlowSoftware = 2   ///< Software(XON / XOFF) flow control 软件流控制
   };
-  
+
   SerialDevice(EpollLoop *loop, const std::string &name);
   ~SerialDevice() override;
-   //初始化
-  bool init(const std::string &portName, BaudRate baudRate =  BaudRate9600,
+  //初始化
+  bool init(const std::string &portName, BaudRate baudRate = BaudRate9600,
             Parity parity = ParityNone, DataBits dataBits = DataBits8,
             StopBits stopbits = StopOne, FlowControl flowControl = FlowNone,
             OperateMode mode = AsynchronousOperate,
             size_t readBufferSize = 4096);
-            
-  //Form  IODevice
+
+  // Form  IODevice
   bool start() override;
   void stop() override;
   void close() override;
   void cleanup() override;
-  //Send
-  void send(const char *data,size_t len);
+  // Send
+  void send(const char *data, size_t len);
   void send(ByteBuf &buf);
   //设置读取回调
   void setReadCallback(ReadCallBack &&cb);
 
-  void debugPrint(){
-     std::cout << "12312312312312"<<std::endl;
-  }
+  void debugPrint() { std::cout << "12312312312312" << std::endl; }
+
  private:
- //设置串口属性
+  //设置串口属性
   bool uartSet(Fd &fd, BaudRate baudRate, Parity parity, DataBits dataBits,
                StopBits stopbits, FlowControl flowControl);
-  
+
   int baudRate2Enum(int baudrate);
   //读取处理Epoll驱动事件
   void onReadCallBack();
-  //Write Event
+  // Write Event
   void onWriteCallBack();
   Fd fd_;
   EpollLoop *loop_;

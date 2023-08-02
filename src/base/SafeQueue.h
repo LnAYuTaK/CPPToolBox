@@ -4,9 +4,9 @@
  * @brief  线程安全队列
  * @version 0.1
  * @date 2023-06.5
- * 
+ *
  * @copyright Copyright (c) 2023 国网中电研发部
- * 
+ *
  */
 #pragma once
 

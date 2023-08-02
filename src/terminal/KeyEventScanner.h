@@ -1,7 +1,6 @@
-#pragma once 
+#pragma once
 
 #include <cstdint>
-
 
 /**
  * 关键词扫描器
@@ -45,51 +44,84 @@
  *
  * 本扫描器使用状态机进行识别。
  * 在开始识别时，先调用 start() 重置状态。
- * 然后逐一将收到的字符通过调用 next() 喂给扫描器，判断其返回值，见 Status 定义。
- * 如果处理完最后一个字符都是 kUnsure 状态，在扫描完最后一个字符后要调用 stop()，再判断其返回值。
- * 如果返回了 kEnsure，则可以从 result() 获取识别的结果。如果是组合键，可进一步通过 extra() 获取组合键的值。
+ * 然后逐一将收到的字符通过调用 next() 喂给扫描器，判断其返回值，见 Status
+ * 定义。 如果处理完最后一个字符都是 kUnsure 状态，在扫描完最后一个字符后要调用
+ * stop()，再判断其返回值。 如果返回了 kEnsure，则可以从 result()
+ * 获取识别的结果。如果是组合键，可进一步通过 extra() 获取组合键的值。
  */
 class KeyEventScanner {
-  public:
-    enum class Status {
-        kUnsure,    //!< 尚不确定
-        kEnsure,    //!< 已确定
-        kFail,      //!< 匹配失败
-    };
+ public:
+  enum class Status {
+    kUnsure,  //!< 尚不确定
+    kEnsure,  //!< 已确定
+    kFail,    //!< 匹配失败
+  };
 
-    void start();
-    Status next(uint8_t byte);
-    Status stop();
+  void start();
+  Status next(uint8_t byte);
+  Status stop();
 
-    enum class Result {
-        kNone,
-        kPrintable,
-        kTab, kBackspace, kESC, kEnter, //! 常规键
-        kAltPlus, kCtrlAltPlus,         //!< 组合键
-        kMoveUp, kMoveDown, kMoveLeft, kMoveRight,  //!< 方向键
-        kHome, kInsert, kDelete, kEnd, kPageUp, kPageDown,
-        kF1, kF2, kF3, kF4, kF5, kF6, kF7, kF8, kF9, kF10, kF11, kF12   //!< Fn 键
-    };
+  enum class Result {
+    kNone,
+    kPrintable,
+    kTab,
+    kBackspace,
+    kESC,
+    kEnter,  //! 常规键
+    kAltPlus,
+    kCtrlAltPlus,  //!< 组合键
+    kMoveUp,
+    kMoveDown,
+    kMoveLeft,
+    kMoveRight,  //!< 方向键
+    kHome,
+    kInsert,
+    kDelete,
+    kEnd,
+    kPageUp,
+    kPageDown,
+    kF1,
+    kF2,
+    kF3,
+    kF4,
+    kF5,
+    kF6,
+    kF7,
+    kF8,
+    kF9,
+    kF10,
+    kF11,
+    kF12  //!< Fn 键
+  };
 
-    inline Result result() const { return result_; }
-    inline uint8_t extra() const { return extra_; }
+  inline Result result() const { return result_; }
+  inline uint8_t extra() const { return extra_; }
 
-  private:
-    enum class Step {
-        kNone,
-        k0d, kc2,
-        k1b, k1b5b,
-        k1b5b31, k1b5b3135, k1b5b3137, k1b5b3138, k1b5b3139,
-        k1b5b32, k1b5b3230, k1b5b3231, k1b5b3233, k1b5b3234,
-        k1b5b33,
-        k1b5b34,
-        k1b5b35,
-        k1b5b36,
-        k1b4f,
-    };
+ private:
+  enum class Step {
+    kNone,
+    k0d,
+    kc2,
+    k1b,
+    k1b5b,
+    k1b5b31,
+    k1b5b3135,
+    k1b5b3137,
+    k1b5b3138,
+    k1b5b3139,
+    k1b5b32,
+    k1b5b3230,
+    k1b5b3231,
+    k1b5b3233,
+    k1b5b3234,
+    k1b5b33,
+    k1b5b34,
+    k1b5b35,
+    k1b5b36,
+    k1b4f,
+  };
 
-    Result result_ = Result::kNone;
-    uint8_t extra_ = 0;
-    Step step_ = Step::kNone;
+  Result result_ = Result::kNone;
+  uint8_t extra_ = 0;
+  Step step_ = Step::kNone;
 };
-

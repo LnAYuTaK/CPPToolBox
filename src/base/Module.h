@@ -4,9 +4,9 @@
  * @brief   基础单元模块
  * @version 0.1
  * @date 2023-07-29
- * 
+ *
  *  Copyright (c) 2023 国网中电研发部
- * 
+ *
  */
 #pragma once
 
@@ -25,10 +25,10 @@ class Module {
   inline std::string name() { return name_; }
   inline State state() const { return state_; }
 
-  virtual bool init(){return true;}
+  virtual bool init() { return true; }
   virtual bool start() = 0;
   virtual void stop() = 0;
-  virtual void close()  = 0;
+  virtual void close() = 0;
   virtual void cleanup() = 0;
 
   virtual void onFillDefaultConfig() {}

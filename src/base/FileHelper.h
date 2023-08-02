@@ -2,11 +2,12 @@
  * @file FileHelper.h
  * @author 刘宽 (807874484@qq.com)
  * @brief  文件操作工具类
+ * 内部是都是静态方法，无法实例化
  * @version 0.1
  * @date 2023-06-25
- * 
+ *
  * @copyright Copyright (c) 2023 国网中电研发部
- * 
+ *
  */
 #pragma once
 #include <dirent.h>
@@ -66,7 +67,8 @@ class FileHelper {
   static bool getType(const std::string &filename, FileType *type);
   //创建文件夹
   static bool createDir(const std::string &dir);
+
  private:
-  FileHelper() =delete;
-  ~FileHelper() =delete;
+  FileHelper() = delete;
+  ~FileHelper() = delete;
 };

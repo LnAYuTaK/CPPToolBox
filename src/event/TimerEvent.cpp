@@ -1,9 +1,9 @@
 #include "TimerEvent.h"
 
+#include <fcntl.h>
 #include <sys/time.h>
 #include <sys/timerfd.h>
 #include <unistd.h>
-#include <fcntl.h>
 
 #include <chrono>
 #include "CLog.h"
@@ -12,7 +12,7 @@ namespace {
 constexpr auto NANOSECS_PER_SECOND = 1000000000ul;
 constexpr int MILLS_IN_SECOND = 1000;
 constexpr int NANOS_IN_MILL = 1000 * 1000;
-}
+}  // namespace
 
 TimerEvent::TimerEvent(EpollLoop *loop, const std::string &name)
     : Event(name), timerFd_(-1) {
@@ -24,7 +24,8 @@ TimerEvent::~TimerEvent() {}
 uint64_t TimerEvent::nowSinceEpoch() {
   auto now = std::chrono::high_resolution_clock::now();
   auto duration = now.time_since_epoch();
-  return static_cast<uint64_t>(std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
+  return static_cast<uint64_t>(
+      std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 }
 
 uint64_t TimerEvent::fromNow(uint64_t timestamp) {
@@ -32,16 +33,17 @@ uint64_t TimerEvent::fromNow(uint64_t timestamp) {
   return (timestamp >= now) ? (timestamp - now) : 0;
 }
 
-struct timespec  TimerEvent::fromNowInTimeSpec(uint64_t timestamp) {
+struct timespec TimerEvent::fromNowInTimeSpec(uint64_t timestamp) {
   auto from_now_mills = fromNow(timestamp);
   struct timespec ts;
   ts.tv_sec = static_cast<time_t>(from_now_mills / MILLS_IN_SECOND);
-  ts.tv_nsec = static_cast<int64_t>((from_now_mills % MILLS_IN_SECOND) * NANOS_IN_MILL);
+  ts.tv_nsec =
+      static_cast<int64_t>((from_now_mills % MILLS_IN_SECOND) * NANOS_IN_MILL);
   return ts;
 }
 
 bool TimerEvent::init(const std::chrono::nanoseconds first,
-                        const std::chrono::nanoseconds repeat) {
+                      const std::chrono::nanoseconds repeat) {
   timerFd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
   if (timerFd_ < 0) {
     return false;
@@ -54,7 +56,8 @@ bool TimerEvent::init(const std::chrono::nanoseconds first,
   timerSpec_.it_interval.tv_sec = repeat_nanosec / NANOSECS_PER_SECOND;
   timerSpec_.it_interval.tv_nsec = repeat_nanosec % NANOSECS_PER_SECOND;
 
-  auto mode = repeat_nanosec != 0 ? Event::Mode::kPersist : Event::Mode::kOneshot;
+  auto mode =
+      repeat_nanosec != 0 ? Event::Mode::kPersist : Event::Mode::kOneshot;
   TimerEvent_->init(timerFd_, mode);
 
   TimerEvent_->setReadCallback(std::bind(&TimerEvent::onTimerEvent, this));
@@ -90,7 +93,7 @@ std::chrono::nanoseconds TimerEvent::remainTime() const {
     remain_time += std::chrono::seconds(ts.it_value.tv_sec);
     remain_time += std::chrono::nanoseconds(ts.it_value.tv_nsec);
   } else {
-        CLOG_ERROR() << name() << ": Get ReMainTime Error";
+    CLOG_ERROR() << name() << ": Get ReMainTime Error";
   }
   return remain_time;
 }
@@ -101,11 +104,11 @@ void TimerEvent::setTimerCallback(TimerCallback &&cb) {
 
 void TimerEvent::onTimerEvent() {
   uint64_t exp = 0;
-  int len  = ::read(timerFd_, &exp, sizeof(exp));
-  if (len <= 0){
-      return;
+  int len = ::read(timerFd_, &exp, sizeof(exp));
+  if (len <= 0) {
+    return;
   }
-  if(timerCallback_){
+  if (timerCallback_) {
     timerCallback_();
   }
 }

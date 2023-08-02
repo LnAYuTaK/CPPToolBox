@@ -1,9 +1,9 @@
 #pragma once
 
 #include <sys/epoll.h>
-#include "Fd.h"
-#include "EpollLoop.h"
 #include "CLog.h"
+#include "EpollLoop.h"
+#include "Fd.h"
 
 class FdEvent;
 class EpollFdEvent : public FdEvent {
@@ -88,6 +88,7 @@ class EpollFdEvent : public FdEvent {
   void setIndex(int idx) { index_ = idx; }
   void setRevents(int revt) { revents_ = revt; }
   int events() const { return events_; }
+
  private:
   static const int kNoneEvent;
   static const int kReadEvent;

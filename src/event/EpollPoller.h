@@ -9,20 +9,19 @@
 
 struct epoll_event;
 class EpollPoller {
-
   using FdEventList = std::vector<EpollFdEvent*>;
   using EventList = std::vector<struct epoll_event>;
   using FdEvenMap = std::unordered_map<int, EpollFdEvent*>;
-  
+
  public:
   EpollPoller(EpollLoop* loop);
   ~EpollPoller();
   /**
    * @brief 启动Epoll
-   * 
-   * @param timeoutMs 
-   * @param activeEvents 
-   * @return int 
+   *
+   * @param timeoutMs
+   * @param activeEvents
+   * @return int
    */
   int poll(int timeoutMs, FdEventList* activeEvents);
   //更新事件
@@ -33,6 +32,7 @@ class EpollPoller {
   bool hasEvent(EpollFdEvent* event) const;
   // Epoll的文件描述符
   inline int epollFd() { return epollFd_; }
+
  private:
   //填充活跃事件
   void fillActiveEvents(int numEvents, FdEventList* activeEvents) const;

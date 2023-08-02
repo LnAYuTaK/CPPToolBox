@@ -2,11 +2,13 @@
  * @file MacroDef.h
  * @author LnAYuTaK (807874484@qq.com)
  * @brief  通用宏定义
+ *
  * @version 0.1
  * @date 2023-07-11
  */
 
 #pragma once
+#include <unistd.h>
 #include <chrono>
 #include <cstdlib>
 #include <iostream>
@@ -16,7 +18,6 @@
 #include <thread>
 #include <type_traits>
 #include <utility>
-#include <unistd.h>
 
 #define DEFINE_TYPE_TRAIT(name, func)                      \
   template <typename T>                                    \
@@ -57,7 +58,7 @@ typename std::enable_if<!HasShutdown<T>::value>::type CallShutdown(
 #define DISALLOW_COPY_AND_ASSIGN(classname)         \
   classname(const classname &) = delete;            \
   classname(const classname &&) = delete;           \
-  classname &operator=(const classname &) = delete;  \
+  classname &operator=(const classname &) = delete; \
   classname &operator=(classname &&) = delete;
 
 //单例注册宏
@@ -163,21 +164,16 @@ typename std::enable_if<!HasShutdown<T>::value>::type CallShutdown(
 #endif
 
 //基于无参构造、析构、swap,实现reset与移动函数
-#define IMP_MOVE_RESET_FUNC_BASE_ON_SWAP(class_name) \
-    class_name::class_name(class_name&& other) \
-    { \
-        swap(other); \
-    } \
-    class_name& class_name::operator = (class_name&& other) \
-    { \
-        if (this != &other) { \
-            reset(); \
-            swap(other); \
-        } \
-        return *this; \
-    } \
-    void class_name::reset() \
-    { \
-        class_name tmp; \
-        swap(tmp); \
-    }
+#define IMP_MOVE_RESET_FUNC_BASE_ON_SWAP(class_name)          \
+  class_name::class_name(class_name &&other) { swap(other); } \
+  class_name &class_name::operator=(class_name &&other) {     \
+    if (this != &other) {                                     \
+      reset();                                                \
+      swap(other);                                            \
+    }                                                         \
+    return *this;                                             \
+  }                                                           \
+  void class_name::reset() {                                  \
+    class_name tmp;                                           \
+    swap(tmp);                                                \
+  }

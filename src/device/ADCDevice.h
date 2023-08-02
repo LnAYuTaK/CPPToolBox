@@ -77,18 +77,18 @@ class ADCDevice : public IODevice {
   //设置是否开启比较
   bool setCompare(COMPARE compare);
 
- private: 
- //开启连续读
+ private:
+  //开启连续读
   bool startContinuousRead();
-  
+
   bool continuousRead(int16_t *raw, float *v);
 
   bool ads1115Read(uint8_t reg, int16_t *data);
 
   bool ads1115Write(uint8_t reg, uint16_t data);
-   //I2C读
+  // I2C读
   bool iicRead(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len);
-   //I2C写
+  // I2C写
   bool iicWrite(uint8_t addr, uint8_t reg, uint8_t *buf, uint16_t len);
 
   static uint8_t convAddr(ADDR addr);
