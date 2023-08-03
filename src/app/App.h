@@ -30,8 +30,6 @@
 #include "FdEvent.h"
 #include "Loop.h"
 #include "SerialDevice.h"
-#include "TCPClient.h"
-#include "TCPServer.h"
 #include "TimerEvent.h"
 
 class Application {

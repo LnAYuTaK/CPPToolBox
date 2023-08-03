@@ -13,21 +13,37 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <cstring>
-#include "CLog.h"
+
 #include "Fd.h"
-#include "MacroDef.h"
 
 class NetAddress;
 enum class Protocol;
-class Socket : public Fd {
+class Socket{
  public:
-  Socket() noexcept = default;
-  Socket(const Fd &fd);
+  using ptr =  std::shared_ptr<Socket>;
+  using weak_ptr =  std::weak_ptr<Socket>;
+
+  enum  Type {
+        /// TCP类型
+        TCP = SOCK_STREAM,
+        /// UDP类型
+        UDP = SOCK_DGRAM
+  };
+
+  enum  Family {
+        /// IPv4 socket
+        IPv4 = AF_INET,
+        /// IPv6 socket
+        IPv6 = AF_INET6,
+        /// Unix socket
+        UNIX = AF_UNIX,
+  };
 
  public:
-  static Socket createSocket(int domain, int type, int protocal);
-  static Socket createUdpSocket();
-  static Socket createTcpSocket();
+  Socket(int family, int type, int protocol = 0);
+
+  static Socket::ptr CreateUdpSocket();
+  static Socket::ptr CreateTcpSocket();
 
  public:
   int connect(NetAddress &adress);
@@ -72,4 +88,7 @@ class Socket : public Fd {
    * @return false
    */
   bool setSendBufferSize(int size);
+
+  private:
+    Fd fd_;
 };
