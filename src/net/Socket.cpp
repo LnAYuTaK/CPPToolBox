@@ -1,11 +1,13 @@
 #include "Socket.h"
 
+#include <sys/types.h>
 #include <sys/socket.h>
+#include <netinet/tcp.h> 
+#include <netinet/in.h>
 #include <memory>
 
 #include "CLog.h"
 #include "MacroDef.h"
-
 #include "NetAddress.h"
 
 static constexpr int BACK_LOG = 128;
@@ -18,10 +20,10 @@ Socket::Socket(int family, int type, int protocol)
       int val = 1;
       //设置地址重用
       setSocketOpt(SOL_SOCKET, SO_REUSEADDR, val);
-      //设置禁止Nagle算法
-      // if(type == Type::TCP) {
-      //   setSocketOpt(IPPROTO_TCP,TCP_NODELAY, val);
-      // }
+      //小数据量还是取消Nagle好点
+      if(type == Type::TCP) {
+        setSocketOpt(IPPROTO_TCP,TCP_NODELAY, val);
+      }
     }
 }
 
@@ -65,25 +67,25 @@ int Socket::accept(NetAddress &adress) {
   return ret;
 }
 
-bool Socket::getSocketOpt(int level, int optname, void *optval,
-                          socklen_t *optlen) {
-  if (::getsockopt(fd_.get(), level, optname, optval, optlen) != 0) {
+bool Socket::getSocketOpt(int level, int opt_name, void *opt_val,
+                          socklen_t *opt_len) {
+  if (::getsockopt(fd_.get(), level, opt_name, opt_val, opt_len) != 0) {
     CLOG_ERROR() << "Get Socket Opt Error";
     return false;
   }
   return true;
 }
 
-bool Socket::setSocketOpt(int level, int optname, int optval) {
-  if (::setsockopt(fd_.get(), level, optname, &optval, sizeof(optval)) != 0) {
+bool Socket::setSocketOpt(int level, int opt_name, int opt_val) {
+  if (::setsockopt(fd_.get(), level, opt_name, &opt_val, sizeof(opt_val)) != 0) {
     return false;
   }
   return true;
 }
 
-bool Socket::setSocketOpt(int level, int optname, const void *optval,
-                          socklen_t optlen) {
-  if (::setsockopt(fd_.get(), level, optname, optval, optlen) != 0) {
+bool Socket::setSocketOpt(int level, int opt_name, const void *opt_val,
+                          socklen_t opt_len) {
+  if (::setsockopt(fd_.get(), level, opt_name, opt_val, opt_len) != 0) {
     return false;
   }
   return true;

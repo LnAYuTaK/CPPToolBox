@@ -27,7 +27,6 @@
 #include "ADCDevice.h"
 #include "Database.h"
 #include "EpollFdEvent.h"
-#include "FdEvent.h"
 #include "Loop.h"
 #include "SerialDevice.h"
 #include "TimerEvent.h"
@@ -44,10 +43,10 @@ class Application {
   // Event Loop;
   void exec();
   // Main Loop
-  EpollLoop* loop() { return this->loop_; }
+  Loop* loop() { return this->loop_; }
   // SerialDevice* uart1;
  private:
-  EpollLoop* loop_ = nullptr;
+  Loop* loop_ = nullptr;
 };
 
 //全局单例接口

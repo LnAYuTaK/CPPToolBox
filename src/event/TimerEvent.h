@@ -14,15 +14,15 @@
 #include <functional>
 #include <string>
 #include "EpollFdEvent.h"
-#include "EpollLoop.h"
-#include "FdEvent.h"
+#include "Loop.h"
+#include "Event.h"
 #include "MacroDef.h"
 
 class TimerEvent : public Event {
   using TimerCallback = std::function<void()>;
 
  public:
-  explicit TimerEvent(EpollLoop *loop, const std::string &name);
+  explicit TimerEvent(Loop *loop, const std::string &name);
   virtual ~TimerEvent() override;
 
  public:

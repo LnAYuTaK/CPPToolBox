@@ -19,7 +19,7 @@
 #include <termios.h>
 #include "App.h"
 
-SerialDevice::SerialDevice(EpollLoop *loop, const std::string &name)
+SerialDevice::SerialDevice(Loop *loop, const std::string &name)
     : loop_(loop),
       fd_(-1),
       serialEvent_(nullptr),
@@ -41,7 +41,7 @@ bool SerialDevice::init(const std::string &portName, BaudRate baudRate,
   // Rsize
   readBuffer_.capacity((int)bufferSize);
   writeBuffer_.capacity((int)bufferSize);
-  serialEvent_ = loop_->creatFdEvent(name_);
+  serialEvent_ = loop_->CreatFdEvent(name_);
   // Fd init
   fd_ = Fd::Open(portName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
   fd_.setNonBlock(true);

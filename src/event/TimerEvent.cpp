@@ -14,9 +14,9 @@ constexpr int MILLS_IN_SECOND = 1000;
 constexpr int NANOS_IN_MILL = 1000 * 1000;
 }  // namespace
 
-TimerEvent::TimerEvent(EpollLoop *loop, const std::string &name)
+TimerEvent::TimerEvent(Loop *loop, const std::string &name)
     : Event(name), timerFd_(-1) {
-  TimerEvent_ = loop->creatFdEvent(name);
+  TimerEvent_ = loop->CreatFdEvent(name);
 }
 
 TimerEvent::~TimerEvent() {}

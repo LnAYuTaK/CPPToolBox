@@ -1,9 +1,9 @@
 #include "IODevice.h"
 #include "ADCDevice.h"
-#include "EpollLoop.h"
+#include "Loop.h"
 #include "SerialDevice.h"
 
-SerialDevice* IODevice::creatSerialDevice(EpollLoop* loop,
+SerialDevice* IODevice::CreatSerialDevice(Loop* loop,
                                           const std::string& name) {
   return new SerialDevice(loop, name);
 }

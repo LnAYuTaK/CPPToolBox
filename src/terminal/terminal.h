@@ -35,7 +35,7 @@ class Terminal {
   NodeToken createDirNode(const std::string &help);
   NodeToken rootNode() const;
   NodeToken findNode(const std::string &path) const;
-  bool mountNode(const NodeToken &parent, const NodeToken &child,
+  bool  mountNode(const NodeToken &parent, const NodeToken &child,
                  const std::string &name);
 
  protected:

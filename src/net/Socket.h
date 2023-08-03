@@ -13,11 +13,9 @@
 #include <errno.h>
 #include <sys/socket.h>
 #include <cstring>
-
+#include  <memory>
 #include "Fd.h"
-
 class NetAddress;
-enum class Protocol;
 class Socket{
  public:
   using ptr =  std::shared_ptr<Socket>;
@@ -41,7 +39,7 @@ class Socket{
 
  public:
   Socket(int family, int type, int protocol = 0);
-
+  
   static Socket::ptr CreateUdpSocket();
   static Socket::ptr CreateTcpSocket();
 

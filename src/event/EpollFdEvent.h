@@ -2,18 +2,16 @@
 
 #include <sys/epoll.h>
 #include "CLog.h"
-#include "EpollLoop.h"
+#include "Loop.h"
 #include "Fd.h"
-
-class FdEvent;
-class EpollFdEvent : public FdEvent {
+#include "Event.h"
+class EpollFdEvent : public Event {
  public:
-  explicit EpollFdEvent(EpollLoop *wp_loop, const std::string &name);
+  explicit EpollFdEvent(Loop *wp_loop, const std::string &name);
   virtual ~EpollFdEvent() override;
 
   using EventCallback = std::function<void()>;
   using ReadEventCallback = std::function<void(int)>;
-
  public:
   /**
    * @brief 初始化EpollFd事件
@@ -23,7 +21,7 @@ class EpollFdEvent : public FdEvent {
    * @return true
    * @return false
    */
-  bool init(int fd, Mode mode) override;
+  bool init(int fd, Mode mode);
   void setReadCallback(ReadEventCallback &&cb) {
     readCallback_ = std::move(cb);
   }
@@ -82,7 +80,7 @@ class EpollFdEvent : public FdEvent {
    */
   bool isNoneEvent() const { return events_ == kNoneEvent; }
 
-  EpollLoop *getLoop() { return this->loop_; }
+  Loop *getLoop() { return this->loop_; }
   const int fd() const { return fd_; }
   int index() { return index_; }
   void setIndex(int idx) { index_ = idx; }
@@ -94,7 +92,7 @@ class EpollFdEvent : public FdEvent {
   static const int kReadEvent;
   static const int kWriteEvent;
   // EPool循环池
-  EpollLoop *loop_;
+  Loop *loop_;
   //持有的文件描述符
   int fd_;
   //是否已经加入到了Loop池

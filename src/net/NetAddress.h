@@ -7,13 +7,14 @@
 #include <cstring>
 #include <iostream>
 #include <string>
+
 class NetAddress {
  public:
   enum class Protocol { Ipv4, Ipv6 };
 
   NetAddress(const char *ip, uint16_t port, Protocol protocol = Protocol::Ipv4);
 
-  ~NetAddress();
+  ~NetAddress(){}
 
   inline Protocol protocol() const;
 

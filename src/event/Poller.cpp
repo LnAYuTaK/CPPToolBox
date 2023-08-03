@@ -1,7 +1,7 @@
 
-#include "EpollPoller.h"
+#include "Poller.h"
 #include "EpollFdEvent.h"
-#include "EpollLoop.h"
+#include "Loop.h"
 
 #include <assert.h>
 #include <errno.h>
@@ -22,7 +22,7 @@ const int kDeleted = 2;
 #define DEFAULT_MAX_LOOP_ENTRIES (256)
 #endif
 
-EpollPoller::EpollPoller(EpollLoop* loop)
+Poller::Poller(Loop* loop)
     : epollFd_(::epoll_create1(EPOLL_CLOEXEC)),
       events_(DEFAULT_MAX_LOOP_ENTRIES) {
   if (epollFd_ < 0) {
@@ -30,9 +30,9 @@ EpollPoller::EpollPoller(EpollLoop* loop)
   }
 }
 
-EpollPoller::~EpollPoller() { CHECK_CLOSE_RESET_FD(epollFd_); }
+Poller::~Poller() { CHECK_CLOSE_RESET_FD(epollFd_); }
 
-int EpollPoller::poll(int timeoutMs, FdEventList* activeEvents) {
+int Poller::poll(int timeoutMs, FdEventList* activeEvents) {
   int numEvents = ::epoll_wait(epollFd_, &*events_.begin(),
                                static_cast<int>(events_.size()), timeoutMs);
   int savedErrno = errno;
@@ -50,7 +50,7 @@ int EpollPoller::poll(int timeoutMs, FdEventList* activeEvents) {
   return 1;
 }
 
-void EpollPoller::fillActiveEvents(int numEvents,
+void Poller::fillActiveEvents(int numEvents,
                                    FdEventList* activeEvents) const {
   assert(static_cast<size_t>(numEvents) <= events_.size());
   for (int i = 0; i < numEvents; ++i) {
@@ -64,7 +64,7 @@ void EpollPoller::fillActiveEvents(int numEvents,
   }
 }
 
-void EpollPoller::updateEvent(EpollFdEvent* fdEvent) {
+void Poller::updateEvent(EpollFdEvent* fdEvent) {
   const int index = fdEvent->index();
   //如果是新增加事件或者已经删除事件
   if (index == kNew || index == kDeleted) {
@@ -95,7 +95,7 @@ void EpollPoller::updateEvent(EpollFdEvent* fdEvent) {
   }
 }
 
-void EpollPoller::removeEvent(EpollFdEvent* fdEvent) {
+void Poller::removeEvent(EpollFdEvent* fdEvent) {
   int fd = fdEvent->fd();
   assert(fdEventMaps_.find(fd) != fdEventMaps_.end());
   assert(fdEventMaps_[fd] == fdEvent);
@@ -110,7 +110,7 @@ void EpollPoller::removeEvent(EpollFdEvent* fdEvent) {
   fdEvent->setIndex(kNew);
 }
 
-void EpollPoller::update(int operation, EpollFdEvent* fdEvent) {
+void Poller::update(int operation, EpollFdEvent* fdEvent) {
   struct epoll_event event;
   Utils::memZero(&event, sizeof event);
   event.events = fdEvent->events();
@@ -124,7 +124,7 @@ void EpollPoller::update(int operation, EpollFdEvent* fdEvent) {
     }
   }
 }
-bool EpollPoller::hasEvent(EpollFdEvent* event) const {
+bool Poller::hasEvent(EpollFdEvent* event) const {
   FdEvenMap::const_iterator it = fdEventMaps_.find(event->fd());
   return it != fdEventMaps_.end() && it->second == event;
 }

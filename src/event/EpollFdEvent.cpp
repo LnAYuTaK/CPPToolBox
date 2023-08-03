@@ -5,14 +5,13 @@
 #include <vector>
 
 #include "EpollFdEvent.h"
-#include "FdEvent.h"
 
 const int EpollFdEvent::kNoneEvent = 0;
 const int EpollFdEvent::kReadEvent = EPOLLIN | EPOLLPRI;
 const int EpollFdEvent::kWriteEvent = EPOLLOUT;
 
-EpollFdEvent::EpollFdEvent(EpollLoop *wpLoop, const std::string &name)
-    : FdEvent(name),
+EpollFdEvent::EpollFdEvent(Loop *wpLoop, const std::string &name)
+    : Event(name),
       loop_(wpLoop),
       addedToLoop_(false),
       isStopAfterTrigger_(false),
@@ -37,7 +36,7 @@ void EpollFdEvent::remove() {
 
 bool EpollFdEvent::init(int fd, Mode mode) {
   fd_ = fd;
-  if (mode == FdEvent::Mode::kOneshot) {
+  if (mode == Event::Mode::kOneshot) {
     isStopAfterTrigger_ = true;
   }
   return true;

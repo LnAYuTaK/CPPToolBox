@@ -13,7 +13,7 @@
 
 class SerialDevice;
 class ADCDevice;
-class EpollLoop;
+class Loop;
 class IODevice {
  public:
   enum State {
@@ -41,7 +41,7 @@ class IODevice {
   std::string name_;
   inline State state() const { return state_; }
   void setState(State state) { state_ = state; }
-  static SerialDevice* creatSerialDevice(EpollLoop* loop,
+  static SerialDevice* CreatSerialDevice(Loop* loop,
                                          const std::string& name);
 
  private:

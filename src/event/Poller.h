@@ -5,17 +5,17 @@
 #include <unordered_map>
 #include <vector>
 
-#include "EpollLoop.h"
+#include "Loop.h"
 
 struct epoll_event;
-class EpollPoller {
+class Poller {
   using FdEventList = std::vector<EpollFdEvent*>;
   using EventList = std::vector<struct epoll_event>;
   using FdEvenMap = std::unordered_map<int, EpollFdEvent*>;
 
  public:
-  EpollPoller(EpollLoop* loop);
-  ~EpollPoller();
+  Poller(Loop* loop);
+  ~Poller();
   /**
    * @brief 启动Epoll
    *
@@ -41,5 +41,5 @@ class EpollPoller {
   int epollFd_;
   FdEvenMap fdEventMaps_;
   EventList events_;
-  EpollLoop* loop_;
+  Loop* loop_;
 };

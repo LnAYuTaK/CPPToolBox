@@ -12,7 +12,7 @@
 #include "ByteBuf.h"
 #include "CLog.h"
 #include "EpollFdEvent.h"
-#include "EpollLoop.h"
+#include "Loop.h"
 #include "Fd.h"
 #include "IODevice.h"
 #include "MacroDef.h"
@@ -76,7 +76,7 @@ class SerialDevice : public IODevice {
     FlowSoftware = 2   ///< Software(XON / XOFF) flow control 软件流控制
   };
 
-  SerialDevice(EpollLoop *loop, const std::string &name);
+  SerialDevice(Loop *loop, const std::string &name);
   ~SerialDevice() override;
   //初始化
   bool init(const std::string &portName, BaudRate baudRate = BaudRate9600,
@@ -109,7 +109,7 @@ class SerialDevice : public IODevice {
   // Write Event
   void onWriteCallBack();
   Fd fd_;
-  EpollLoop *loop_;
+  Loop *loop_;
   EpollFdEvent *serialEvent_;
   size_t bufferSize_;
   ByteBuf readBuffer_;
