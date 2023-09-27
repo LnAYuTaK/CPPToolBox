@@ -1,10 +1,11 @@
 #pragma once
 
 #include <sys/epoll.h>
-#include "CLog.h"
-#include "Loop.h"
-#include "Fd.h"
+
 #include "Event.h"
+#include "Fd.h"
+#include "Loop.h"
+
 class EpollFdEvent : public Event {
  public:
   explicit EpollFdEvent(Loop *wp_loop, const std::string &name);
@@ -12,6 +13,7 @@ class EpollFdEvent : public Event {
 
   using EventCallback = std::function<void()>;
   using ReadEventCallback = std::function<void(int)>;
+  using ptr     = std::unique_ptr<EpollFdEvent>;
  public:
   /**
    * @brief 初始化EpollFd事件
@@ -79,13 +81,17 @@ class EpollFdEvent : public Event {
    *
    */
   bool isNoneEvent() const { return events_ == kNoneEvent; }
+  bool isWriting() const { return events_ & kWriteEvent; }
+  bool isReading() const { return events_ & kReadEvent; }
 
   Loop *getLoop() { return this->loop_; }
   const int fd() const { return fd_; }
-  int index() { return index_; }
+  int  index() { return index_; }
   void setIndex(int idx) { index_ = idx; }
   void setRevents(int revt) { revents_ = revt; }
-  int events() const { return events_; }
+  int  events() const { return events_; }
+  //删除当前的Epoll
+  void remove();
 
  private:
   static const int kNoneEvent;
@@ -109,6 +115,7 @@ class EpollFdEvent : public Event {
   bool isEnabled_;
   //是否正在处理事件
   bool eventHandling_;
+  //是否执行保护事件
   bool lockEvent_;
   //读回调事件
   ReadEventCallback readCallback_;
@@ -120,8 +127,6 @@ class EpollFdEvent : public Event {
   EventCallback errorCallback_;
   //更新事件
   void update();
-  //删除事件
-  void remove();
   //处理保护事件
   void handleLockEvent(int receiveTime);
 };

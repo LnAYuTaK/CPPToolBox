@@ -1,4 +1,5 @@
 #include "Database.h"
+#include "CLog.h"
 
 Database::Database(const char* apFilename,
                    const int aFlags /* = SQLite::OPEN_READONLY*/,
@@ -13,34 +14,33 @@ Database::Database(const char* apFilename,
     setBusyTimeout(aBusyTimeoutMs);
   }
 }
-/***********************************************************/
+
 Database::~Database() { sqlite3_close(handle); }
-/***********************************************************/
+
 const std::string& Database::getFilename() const noexcept { return mFilename; }
-/***********************************************************/
+
 void Database::setBusyTimeout(const int aBusyTimeoutMs) {
   sqlite3_busy_timeout(handle, aBusyTimeoutMs);
 }
-/***********************************************************/
+
 int Database::exec(const char* apQueries) {
   tryExec(apQueries);
   return sqlite3_changes(handle);
 }
-/***********************************************************/
+
 int Database::tryExec(const char* apQueries) noexcept {
   return sqlite3_exec(handle, apQueries, nullptr, nullptr, nullptr);
 }
-/***********************************************************/
+
 int Database::getErrorCode() const noexcept { return sqlite3_errcode(handle); }
-/***********************************************************/
+
 const char* Database::getErrorMsg() const noexcept {
   return sqlite3_errmsg(handle);
 }
-/***********************************************************/
+
 queryVector Database::dbQuery(const std::string& query) {
   queryVector results;
   int result =
       sqlite3_exec(handle, query.c_str(), queryCallback, &results, NULL);
   return results;
 }
-/***********************************************************/

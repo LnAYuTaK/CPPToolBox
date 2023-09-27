@@ -50,15 +50,10 @@ int Poller::poll(int timeoutMs, FdEventList* activeEvents) {
   return 1;
 }
 
-void Poller::fillActiveEvents(int numEvents,
-                                   FdEventList* activeEvents) const {
+void Poller::fillActiveEvents(int numEvents, FdEventList* activeEvents) const {
   assert(static_cast<size_t>(numEvents) <= events_.size());
   for (int i = 0; i < numEvents; ++i) {
     EpollFdEvent* fdEvent = static_cast<EpollFdEvent*>(events_[i].data.ptr);
-    int fd = fdEvent->fd();
-    auto it = fdEventMaps_.find(fd);
-    assert(it != fdEventMaps_.end());
-    assert(it->second == fdEvent);
     fdEvent->setRevents(events_[i].events);
     activeEvents->push_back(fdEvent);
   }
@@ -72,9 +67,13 @@ void Poller::updateEvent(EpollFdEvent* fdEvent) {
     int fd = fdEvent->fd();
     //这里做一个map元素检查保证存在元素
     if (index == kNew) {
+
       assert(fdEventMaps_.find(fd) == fdEventMaps_.end());
+      //这里添加元素//
+      CLOG_INFO() << "ADD Item "<< fd;
       fdEventMaps_[fd] = fdEvent;
-    } else {
+    } else { 
+      //index == Deleted
       assert(fdEventMaps_.find(fd) != fdEventMaps_.end());
       assert(fdEventMaps_[fd] == fdEvent);
     }
@@ -83,6 +82,7 @@ void Poller::updateEvent(EpollFdEvent* fdEvent) {
   } else {
     //这里是对原有事件更新
     int fd = fdEvent->fd();
+    (void)fd;
     assert(fdEventMaps_.find(fd) != fdEventMaps_.end());
     assert(fdEventMaps_[fd] == fdEvent);
     assert(index == kAdded);
@@ -97,6 +97,7 @@ void Poller::updateEvent(EpollFdEvent* fdEvent) {
 
 void Poller::removeEvent(EpollFdEvent* fdEvent) {
   int fd = fdEvent->fd();
+  CLOG_INFO() << "Remove Fd: " << fd;
   assert(fdEventMaps_.find(fd) != fdEventMaps_.end());
   assert(fdEventMaps_[fd] == fdEvent);
   assert(fdEvent->isNoneEvent());
@@ -104,6 +105,7 @@ void Poller::removeEvent(EpollFdEvent* fdEvent) {
   assert(index == kAdded || index == kDeleted);
   size_t n = fdEventMaps_.erase(fd);
   assert(n == 1);
+  (void)n;
   if (index == kAdded) {
     update(EPOLL_CTL_DEL, fdEvent);
   }
@@ -112,7 +114,7 @@ void Poller::removeEvent(EpollFdEvent* fdEvent) {
 
 void Poller::update(int operation, EpollFdEvent* fdEvent) {
   struct epoll_event event;
-  Utils::memZero(&event, sizeof event);
+  Utils::memZero(&event, sizeof(event));
   event.events = fdEvent->events();
   event.data.ptr = fdEvent;
   int fd = fdEvent->fd();

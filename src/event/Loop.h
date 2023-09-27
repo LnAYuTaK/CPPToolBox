@@ -1,11 +1,10 @@
 #pragma once
 
-#include <memory>
-#include <unordered_map>
-#include <vector>
 #include <chrono>
 #include <functional>
+#include <memory>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "MacroDef.h"
@@ -13,11 +12,11 @@
 
 class FdEvent;
 class EpollFdEvent;
-class TimerEvent;
+class Timer;
 class Poller;
 class Loop {
  public:
-   enum class Mode {
+  enum class Mode {
     kOnce,    //!< 仅执行一次
     kForever  //!< 一直执行
   };
@@ -28,37 +27,31 @@ class Loop {
   using TaskQueue = std::deque<Task>;
   using TaskQueuePtr = std::unique_ptr<TaskQueue>;
 
-  static Loop *New();
-  
+  static Loop* CreatLoop();
+
   explicit Loop();
-  
-  ~Loop() ;
+
+  ~Loop();
   /**
    * @brief 运行loop
    *
    * @param mode
    */
-  void runLoop(Mode mode = Mode::kForever) ;
+  void runLoop(Mode mode = Mode::kForever);
   /**
    * @brief waittime 后关闭loop
    *
    * @param wait_time
    */
-  void exitLoop(const std::chrono::milliseconds& wait_time) ;
-  /**
-   * @brief 判断是否在loop主线程
-   *
-   * @return true
-   * @return false
-   */
-  bool isInLoopThread() ;
+  void exitLoop(const std::chrono::milliseconds& wait_time);
+
   /**
    * @brief 判断loop是否在运行状态
    *
    * @return true
    * @return false
    */
-  bool isRunning() const ;
+  bool isRunning() const;
   /**
    * @brief  创建任务
    *
@@ -77,14 +70,7 @@ class Loop {
    * @param eventName
    * @return EpollFdEvent*
    */
-  EpollFdEvent* CreatFdEvent(const std::string& eventName) ;
-  /**
-   * @brief  创建定时器事件
-   *
-   * @param eventName
-   * @return TimerEvent*
-   */
-  TimerEvent* CreatTimerEvent(const std::string& eventName) ;
+  static EpollFdEvent* CreatFdEvent(Loop* loop, const std::string& eventName);
   /**
    * @brief 获取Epoll的文件描述符
    *
@@ -111,12 +97,19 @@ class Loop {
    * @return false
    */
   bool hasEvent(EpollFdEvent* event);
-
+  /**
+   * @brief 是否与poll是同一个线程
+   * 
+   * @return true 
+   * @return false 
+   */
+  bool isInLoopThread() const { return threadId_ == std::this_thread::get_id();}
  private:
   bool keepRunning_;
   bool eventHandling_;
   bool callingPendingFunctors_;
 
+  std::thread::id  threadId_;
   PollerPtr poller_;
   FdEventList activeEvents_;
   EpollFdEvent* currentActiveEvent_;

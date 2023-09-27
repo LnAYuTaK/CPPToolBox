@@ -136,73 +136,7 @@ class Utils {
    */
   static std::string StripQuot(const std::string &orig_str);
 
-  /**
-   * \brief       将原始数据转换成HEX字串
-   *
-   * \param data_ptr  原始数据内存地址
-   * \param data_len  原始数据长度
-   * \param uppercase HEX中a~f
-   * \param delimiter 分隔字串
-   *
-   * \return      转换后的HEX字串
-   */
-  static std::string RawDataToHexStr(
-      const void *data_ptr, uint16_t data_len, bool uppercase = false,
-      const std::string &delimiter = std::string(" "));
-
-  //! 字符不是A-Z a-z 0-9
-  class NotAZaz09Exception : public std::exception {
-    virtual const char *what() const throw() override {
-      return "character not a-z A-Z 0-9";
-    }
-  };
-
-  //! 字串个体超过2个
-  class MoreThan2CharException : public std::exception {
-    virtual const char *what() const throw() override {
-      return "more than 2 characters";
-    }
-  };
-
-  /**
-   * \brief       将HEX字串转换成原始数据
-   *
-   * \param hex_str   HEX字串
-   * \param out_ptr   输出到数据地址
-   * \param out_len   输出到数据长度
-   *
-   * \return      实际转换的数据长度
-   */
-  static size_t HexStrToRawData(const std::string &hex_str, void *out_ptr,
-                                uint16_t out_len);
-
-  /**
-   * \brief       将HEX字串转换成原始数据
-   *
-   * \param hex_str   HEX字串
-   * \param out       输出到数据vector
-   * \param delimiter 分隔符，常用的分隔符有 " \t", ": ", ", "
-   *
-   * \return      实际转换的数据长度
-   */
-  static size_t HexStrToRawData(const std::string &hex_str,
-                                std::vector<uint8_t> &out,
-                                const std::string &delimiter = "");
-
-  /**
-   * \brief       替换字串中指定个数的字串
-   *
-   * \param target_str    被修改的字串
-   * \param pattern_str   匹配字串
-   * \param replace_str   用于替换的字串
-   * \param count         替换次数
-   */
-  static void Replace(std::string &target_str, const std::string &pattern_str,
-                      const std::string &replace_str,
-                      std::string::size_type start = 0,
-                      std::string::size_type count = 0);
-
  private:
-  Utils(/* args */) {}
+  Utils() {}
   ~Utils() {}
 };

@@ -10,20 +10,9 @@
  *
  */
 #pragma once
+
 #include <dirent.h>
-#include <fcntl.h>
-#include <glob.h>
-#include <string.h>
-#include <sys/mman.h>
-#include <sys/stat.h>
-#include <sys/types.h>
-#include <unistd.h>
-#include <cerrno>
-#include <cstddef>
-#include <cstdio>
-#include <fstream>
 #include <iostream>
-#include <sstream>
 #include <string>
 #include <vector>
 

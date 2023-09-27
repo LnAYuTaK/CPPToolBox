@@ -1,5 +1,5 @@
 /**
- * @file TimerEvent.h
+ * @file Timer.h
  * @author 刘宽 (807874484@qq.com)
  * @brief  定时器事件
  * @version 0.1
@@ -13,26 +13,22 @@
 #include <chrono>
 #include <functional>
 #include <string>
+
 #include "EpollFdEvent.h"
-#include "Loop.h"
 #include "Event.h"
+#include "Loop.h"
 #include "MacroDef.h"
 
-class TimerEvent : public Event {
+class Timer : public Event {
   using TimerCallback = std::function<void()>;
 
  public:
-  explicit TimerEvent(Loop *loop, const std::string &name);
-  virtual ~TimerEvent() override;
+  explicit Timer(Loop *loop, const std::string &name = "");
+  virtual ~Timer() override;
 
  public:
   /**
    * @brief   定时器时间初始化
-   * 比如设置 first时间为当前时间  设置repeat为五秒,
-   *  定时器会立刻触发记时五秒后触发事件然后重置重复,
-   * 如果设置first为五秒,设置repeat五秒,就会五秒后触发计时
-   * 五秒后重置总共十秒.
-   * 如果只设置first 5秒就只会触发一次.
    * @param first 触发时间
    * @param repeat  间隔时间
    * @return true
@@ -82,9 +78,9 @@ class TimerEvent : public Event {
   struct timespec fromNowInTimeSpec(uint64_t timestamp);
 
  private:
-  void onTimerEvent();
+  void onTimer();
   int timerFd_;
   TimerCallback timerCallback_;
   struct itimerspec timerSpec_;
-  EpollFdEvent *TimerEvent_;
+  EpollFdEvent *Timer_;
 };

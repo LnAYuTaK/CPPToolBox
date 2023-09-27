@@ -42,7 +42,7 @@ class IODevice {
   inline State state() const { return state_; }
   void setState(State state) { state_ = state; }
   static SerialDevice* CreatSerialDevice(Loop* loop,
-                                         const std::string& name);
+                                         const std::string& name = "");
 
  private:
   State state_ = kNone;

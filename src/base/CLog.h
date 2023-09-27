@@ -51,7 +51,7 @@ class CLOG {
     // DEBUG INFO
     LogMsg(CLOG_LEVEL nLevel, const char* pcFunc, const int& line);
     // WARN ERROR
-    LogMsg(CLOG_LEVEL nLevel, const char* pcFunc, const char* file,
+    LogMsg(CLOG_LEVEL nLevel, const char* pcFunc, const char* file_name,
            const int& line);
     ~LogMsg();
     LogStream& stream() { return _stream; }
@@ -65,6 +65,7 @@ class CLOG {
  private:
   // Tudo
   void writeLogLevel(char* buffer, CLOG_LEVEL nLevel);
+  static const char* baseFileName(const char* full_path);
   //-------------------------------
   std::string _LogFileName;  //日志文件名
   bool _ToFile;              //是否允许写入文件
@@ -73,7 +74,6 @@ class CLOG {
   int _MxLogBufferSize;      //最大输出日志长度
 };
 
-// C Style LOG
 #define CLOG_INFO_FMT(fmt, args...)                                            \
   CLOG::Instance()->CLOGPrint(CLOG::CLOG_LEVEL::CLOG_LEVEL_INFO, __FUNCTION__, \
                               __LINE__, fmt, ##args)
@@ -88,11 +88,14 @@ class CLOG {
   CLOG::LogMsg(CLOG::CLOG_LEVEL::CLOG_LEVEL_DEBUG, __FUNCTION__, __LINE__) \
       .stream()
 #define CLOG_INFO()                                                       \
-  CLOG::LogMsg(CLOG::CLOG_LEVEL::CLOG_LEVEL_INFO, __FUNCTION__, __LINE__) \
+  CLOG::LogMsg(CLOG::CLOG_LEVEL::CLOG_LEVEL_INFO, __FUNCTION__, __FILE__, \
+               __LINE__)                                                  \
       .stream()
 #define CLOG_WARN()                                                       \
-  CLOG::LogMsg(CLOG::CLOG_LEVEL::CLOG_LEVEL_WARN, __FUNCTION__, __LINE__) \
+  CLOG::LogMsg(CLOG::CLOG_LEVEL::CLOG_LEVEL_WARN, __FUNCTION__, __FILE__, \
+               __LINE__)                                                  \
       .stream()
 #define CLOG_ERROR()                                                       \
-  CLOG::LogMsg(CLOG::CLOG_LEVEL::CLOG_LEVEL_ERROR, __FUNCTION__, __LINE__) \
+  CLOG::LogMsg(CLOG::CLOG_LEVEL::CLOG_LEVEL_ERROR, __FUNCTION__, __FILE__, \
+               __LINE__)                                                   \
       .stream()

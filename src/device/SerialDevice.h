@@ -9,15 +9,14 @@
 #pragma once
 
 #include <iostream>
+
 #include "ByteBuf.h"
-#include "CLog.h"
 #include "EpollFdEvent.h"
-#include "Loop.h"
 #include "Fd.h"
 #include "IODevice.h"
 #include "MacroDef.h"
-#include "Module.h"
 
+class Loop;
 class SerialDevice : public IODevice {
   using ReadCallBack = std::function<void(const char *, int)>;
 
@@ -96,8 +95,6 @@ class SerialDevice : public IODevice {
   //设置读取回调
   void setReadCallback(ReadCallBack &&cb);
 
-  void debugPrint() { std::cout << "12312312312312" << std::endl; }
-
  private:
   //设置串口属性
   bool uartSet(Fd &fd, BaudRate baudRate, Parity parity, DataBits dataBits,
@@ -108,6 +105,8 @@ class SerialDevice : public IODevice {
   void onReadCallBack();
   // Write Event
   void onWriteCallBack();
+
+ private:
   Fd fd_;
   Loop *loop_;
   EpollFdEvent *serialEvent_;

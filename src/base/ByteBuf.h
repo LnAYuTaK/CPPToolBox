@@ -24,6 +24,7 @@
 #include <cstring>
 #include <memory>
 #include <string>
+
 class ByteBuf;
 enum Case {
   Lower = 0,  //小写

@@ -1,4 +1,5 @@
 #include "ADCDevice.h"
+
 #include <fcntl.h>
 #include <linux/i2c-dev.h>
 #include <linux/i2c.h>
@@ -6,6 +7,7 @@
 #include <sys/ioctl.h>
 #include <unistd.h>
 #include <cassert>
+
 #include "CLog.h"
 #include "MacroDef.h"
 

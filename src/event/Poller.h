@@ -1,4 +1,13 @@
-
+/**
+ * @file Poller.h
+ * @author 刘宽 (807874484@qq.com)
+ * @brief  Epoll事件循环池具体实现
+ * @version 0.1
+ * @date 2023-08-10
+ *
+ * @copyright Copyright (c) 2023 国网中电研发部
+ *
+ */
 #pragma once
 
 #include <map>

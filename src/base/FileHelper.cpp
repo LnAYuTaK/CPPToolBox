@@ -1,4 +1,19 @@
 #include "FileHelper.h"
+
+#include <fcntl.h>
+#include <glob.h>
+#include <string.h>
+#include <sys/mman.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+#include <cerrno>
+#include <cstddef>
+#include <cstdio>
+#include <fstream>
+#include <sstream>
+
 using std::istreambuf_iterator;
 using std::string;
 using std::vector;

@@ -1,4 +1,4 @@
-#include "TimerEvent.h"
+#include "Timer.h"
 
 #include <fcntl.h>
 #include <sys/time.h>
@@ -14,26 +14,25 @@ constexpr int MILLS_IN_SECOND = 1000;
 constexpr int NANOS_IN_MILL = 1000 * 1000;
 }  // namespace
 
-TimerEvent::TimerEvent(Loop *loop, const std::string &name)
-    : Event(name), timerFd_(-1) {
-  TimerEvent_ = loop->CreatFdEvent(name);
+Timer::Timer(Loop *loop, const std::string &name) : Event(name), timerFd_(-1) {
+  Timer_ = loop->CreatFdEvent(loop, name);
 }
 
-TimerEvent::~TimerEvent() {}
+Timer::~Timer() {}
 
-uint64_t TimerEvent::nowSinceEpoch() {
+uint64_t Timer::nowSinceEpoch() {
   auto now = std::chrono::high_resolution_clock::now();
   auto duration = now.time_since_epoch();
   return static_cast<uint64_t>(
       std::chrono::duration_cast<std::chrono::milliseconds>(duration).count());
 }
 
-uint64_t TimerEvent::fromNow(uint64_t timestamp) {
+uint64_t Timer::fromNow(uint64_t timestamp) {
   auto now = nowSinceEpoch();
   return (timestamp >= now) ? (timestamp - now) : 0;
 }
 
-struct timespec TimerEvent::fromNowInTimeSpec(uint64_t timestamp) {
+struct timespec Timer::fromNowInTimeSpec(uint64_t timestamp) {
   auto from_now_mills = fromNow(timestamp);
   struct timespec ts;
   ts.tv_sec = static_cast<time_t>(from_now_mills / MILLS_IN_SECOND);
@@ -42,8 +41,8 @@ struct timespec TimerEvent::fromNowInTimeSpec(uint64_t timestamp) {
   return ts;
 }
 
-bool TimerEvent::init(const std::chrono::nanoseconds first,
-                      const std::chrono::nanoseconds repeat) {
+bool Timer::init(const std::chrono::nanoseconds first,
+                 const std::chrono::nanoseconds repeat) {
   timerFd_ = ::timerfd_create(CLOCK_MONOTONIC, TFD_NONBLOCK | TFD_CLOEXEC);
   if (timerFd_ < 0) {
     return false;
@@ -58,16 +57,16 @@ bool TimerEvent::init(const std::chrono::nanoseconds first,
 
   auto mode =
       repeat_nanosec != 0 ? Event::Mode::kPersist : Event::Mode::kOneshot;
-  TimerEvent_->init(timerFd_, mode);
+  Timer_->init(timerFd_, mode);
 
-  TimerEvent_->setReadCallback(std::bind(&TimerEvent::onTimerEvent, this));
+  Timer_->setReadCallback(std::bind(&Timer::onTimer, this));
   return true;
 }
 
-void TimerEvent::cleanup() { CHECK_CLOSE_RESET_FD(timerFd_); }
+void Timer::cleanup() { CHECK_CLOSE_RESET_FD(timerFd_); }
 
-bool TimerEvent::start() {
-  TimerEvent_->enableReading();
+bool Timer::start() {
+  Timer_->enableReading();
   if (::timerfd_settime(timerFd_, TFD_TIMER_CANCEL_ON_SET, &timerSpec_, NULL) <
       0) {
     return false;
@@ -75,17 +74,17 @@ bool TimerEvent::start() {
   return true;
 }
 
-bool TimerEvent::stop() {
+bool Timer::stop() {
   struct itimerspec ts = {0};
   if (::timerfd_settime(timerFd_, TFD_TIMER_CANCEL_ON_SET, &timerSpec_, NULL) <
       0) {
     return false;
   }
-  TimerEvent_->disableReading();
+  Timer_->disableReading();
   return true;
 }
 
-std::chrono::nanoseconds TimerEvent::remainTime() const {
+std::chrono::nanoseconds Timer::remainTime() const {
   std::chrono::nanoseconds remain_time = std::chrono::nanoseconds::zero();
   struct itimerspec ts;
   int ret = ::timerfd_gettime(timerFd_, &ts);
@@ -98,11 +97,11 @@ std::chrono::nanoseconds TimerEvent::remainTime() const {
   return remain_time;
 }
 
-void TimerEvent::setTimerCallback(TimerCallback &&cb) {
+void Timer::setTimerCallback(TimerCallback &&cb) {
   timerCallback_ = std::move(cb);
 }
 
-void TimerEvent::onTimerEvent() {
+void Timer::onTimer() {
   uint64_t exp = 0;
   int len = ::read(timerFd_, &exp, sizeof(exp));
   if (len <= 0) {

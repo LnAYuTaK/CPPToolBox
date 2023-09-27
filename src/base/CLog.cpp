@@ -28,15 +28,15 @@ CLOG::LogMsg::LogMsg(CLOG_LEVEL nLevel, const char *pcFunc, const int &line) {
           << "[" << line << "]";
 }
 /***********************************************************/
-CLOG::LogMsg::LogMsg(CLOG_LEVEL nLevel, const char *pcFunc, const char *file,
-                     const int &line) {
+CLOG::LogMsg::LogMsg(CLOG_LEVEL nLevel, const char *pcFunc,
+                     const char *file_name, const int &line) {
   std::lock_guard<std::mutex> lock(_mtx);
   nLevel_ = (int)nLevel;
   _stream.zeroBuffer();
   _stream << "[" << CLOG::GetCurrentDateTime() << "]"
           << "[" << LogLevelName[nLevel] << "]"
           << "[" << pcFunc << "]"
-          << "[" << file << "]"
+          << "[" << CLOG::baseFileName(file_name) << "]"
           << "[" << line << "]";
 }
 /***********************************************************/
@@ -111,6 +111,16 @@ void CLOG::writeLogLevel(char *buffer, CLOG_LEVEL nLevel) {
       sprintf(buffer, "%s", "UNKNOW");
       break;
   }
+}
+/***********************************************************/
+const char *CLOG::baseFileName(const char *full_path) {
+  const char *p_last = full_path;
+  if (p_last != nullptr) {
+    for (const char *p = full_path; *p; ++p) {
+      if (*p == '/') p_last = p + 1;
+    }
+  }
+  return p_last;
 }
 /***********************************************************/
 void CLOG::CLOGPrint(CLOG_LEVEL nLevel, const char *pcFunc, const int &line,

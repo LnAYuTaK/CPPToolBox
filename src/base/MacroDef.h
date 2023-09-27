@@ -54,6 +54,16 @@ typename std::enable_if<!HasShutdown<T>::value>::type CallShutdown(
 #undef DISALLOW_COPY_AND_ASSIGN
 #define UNUSED(param) (void)param
 
+//禁止拷贝
+#define DISALLOW_COPY(classname)         \
+  classname(const classname &) = delete; \
+  classname &operator=(const classname &) = delete;
+
+//禁止移动构造
+#define DISALLOW_MOVE(classname)    \
+  classname(classname &&) = delete; \
+  classname &operator=(classname &&) = delete
+
 //禁止拷贝构造宏
 #define DISALLOW_COPY_AND_ASSIGN(classname)         \
   classname(const classname &) = delete;            \
@@ -154,12 +164,13 @@ typename std::enable_if<!HasShutdown<T>::value>::type CallShutdown(
     }                      \
   } while (0)
 
-//! 条件预加载宏
 #ifndef LIKELY
+//大概率条件成立
 #define LIKELY(x) __builtin_expect(!!(x), 1)
 #endif
 
 #ifndef UNLIKELY
+//大概率条件不成立
 #define UNLIKELY(x) __builtin_expect(!!(x), 0)
 #endif
 

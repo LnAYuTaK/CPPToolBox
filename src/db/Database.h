@@ -12,7 +12,6 @@
 #include <fstream>
 #include <memory>
 #include <vector>
-#include "CLog.h"
 #include "MacroDef.h"
 #include "sqlite3.h"
 

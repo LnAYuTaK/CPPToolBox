@@ -1,23 +1,22 @@
 #include "SerialDevice.h"
 
-#include <sys/stat.h>
-#include <sys/types.h>
-
 #include <dirent.h>
 #include <fcntl.h>
+#include <linux/serial.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/ioctl.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+#include <termios.h>
 #include <unistd.h>
+
 #include <mutex>
 #include <string>
-#include "CLog.h"
-#include "MacroDef.h"
 
-#include <fcntl.h>
-#include <linux/serial.h>
-#include <sys/ioctl.h>
-#include <termios.h>
-#include "App.h"
+#include "CLog.h"
+#include "EpollFdEvent.h"
+#include "Loop.h"
 
 SerialDevice::SerialDevice(Loop *loop, const std::string &name)
     : loop_(loop),
@@ -41,7 +40,7 @@ bool SerialDevice::init(const std::string &portName, BaudRate baudRate,
   // Rsize
   readBuffer_.capacity((int)bufferSize);
   writeBuffer_.capacity((int)bufferSize);
-  serialEvent_ = loop_->CreatFdEvent(name_);
+  serialEvent_ = Loop::CreatFdEvent(loop_, name_);
   // Fd init
   fd_ = Fd::Open(portName.c_str(), O_RDWR | O_NOCTTY | O_NDELAY);
   fd_.setNonBlock(true);
