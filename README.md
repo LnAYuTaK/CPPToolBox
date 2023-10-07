@@ -1,31 +1,22 @@
 # 项目概述
 ### 项目文件结构
 ``` DIR
-|--    cpp-tools-box
+|--     CPPToolBox
     |-- CMakeLists.txt
     |-- LICENSE
     |-- README.md
-    |-- bin
-    |-- build   
-    |-- lib
-    |-- thirdparty
-    |   |-- include
-    |   |-- lib
-    |-- src
-    |   |-- main.cpp   
-    |   |-- app         
-    |   |-- common   
+    |-- format.bash
+    |-- src       
+    |   |-- base  
     |   |-- driver
     |   |-- db
     |   |-- event
     |   |-- net
-    |   |-- config
 ```
 
 ## 项目介绍
 ### 系统架构
 项目 参考很多开源项目,做到了整体解耦 
-除了必要的base模块和event模块其他可以通过CMake选项增删
 <img src="res/sys_architeture.png" alt="System Architecture New" height="450">
 
 
@@ -35,13 +26,16 @@
 使用**CMake**构建本项目.
 当您在项目的根路径时, 可以执行以下指令:
 
++ aarch64 on ubuntu 18.04
 ```console
-$ cd Suzuha
+$ cd cpp-tools-box
 $ mkdir build && cd build
-$ cmake .. 
-$ make
-将在 bin 目录生成默认应用程序 
+$ cmake .. -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain_aarch64.cmake  -DCMAKE_INSTALL_PREFIX=/path/to/installation/dir ..
+$ make 
+$ make install 
+则可以将库安装到指定目录
 ```
+
 ### 用例展示
 
 #### 日志模块
@@ -102,14 +96,42 @@ if(uart1->init("/dev/ttyS4"))
 }
 uart1->start();
 ```
-#### DataBase(数据库)
-暂时只封装了Sqlite
+#### Timer(定时器)
+``` CPP
+//开启一个两秒触发一次的定时器
+Timer  *timeTest = new Timer(loop_,"Timer");
+timeTest->init(std::chrono::milliseconds(2000),std::chrono::milliseconds(2000));
+        timeTest->setTimerCallback([](){
+        CLOG_INFO()<< "Timer On Time";
+});
+timeTest->start();
+```
+#### TCP客户端
 
-####Broker(应用程序内部消息分发)
+```CPP
+  TcpClient *client = new TcpClient(loop_);
+  Address address("192.168.16.231", 2345);
+  client->init(address2);
+  client->setConnectCallback([=](const std::shared_ptr<TcpConnection> &conn) {
+    CLOG_INFO() << "Connected";
+  });
+
+  client->setReceiveCallback(
+      [=](const std::shared_ptr<TcpConnection> &conn, void *data, ssize_t n) {
+        char buffer[256];
+        bzero(buffer, 256);
+        memcpy(buffer, (char *)data, n);
+        CLOG_INFO() << "Client recv: " << buffer;
+        conn->send(buffer, n);
+      });
+  client->setCloseCallback([](std::shared_ptr<TcpConnection> conn) {
+    CLOG_INFO() << "CLOSE!!!!!!";
+  });
+  client->start();
+
+```
 
 
-
-####Loop提交事件
 
 
 
