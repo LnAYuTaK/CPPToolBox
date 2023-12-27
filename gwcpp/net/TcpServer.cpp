@@ -42,7 +42,6 @@ void TcpServer::newConnection(Socket::ptr &socket) {
   bzero(buf,sizeof(buf));
   snprintf(buf, sizeof(buf),"%s-%d", (address_->ip()+"-"+std::to_string(address_->port())).c_str(),connId_);
   std::string connName = buf;
-
   TcpConnection::ptr conn(new TcpConnection(loop_,socket,connName));
   connections_[connName] = conn;
   conn->setConnectionCallback(conn_cb_);

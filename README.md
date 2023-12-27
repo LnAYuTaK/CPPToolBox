@@ -30,7 +30,7 @@
 ```console
 $ cd cpp-tools-box
 $ mkdir build && cd build
-$ cmake .. -DCMAKE_TOOLCHAIN_FILE=./cmake/toolchain_aarch64.cmake  -DCMAKE_INSTALL_PREFIX=/path/to/installation/dir ..
+$ cmake ..   -DCMAKE_INSTALL_PREFIX=/path/to/installation/dir 
 $ make 
 $ make install 
 则可以将库安装到指定目录
